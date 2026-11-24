@@ -1,9 +1,11 @@
 import { $, api, applyBranding, countTo, esc, fmt, listen, snow } from "./common.js";
 import { renderBlueprint } from "./blueprint.js";
 import { setUpSound, sfx, startMachine, startMusic } from "./sound.js";
+import { makeFlip } from "./picture.js";
 
-const FEATURE_SECONDS = 12;     // how long each blueprint stays in the featured spot
+const FEATURE_SECONDS = 12;     // how long each blueprint stays in the featured spot (it turns over to its picture halfway)
 const CELEBRATE_SECONDS = 10;   // how long a brand-new wish takes over the screen
+const PICTURE_HOLD_SECONDS = 8; // how long the takeover stays up once the elves finish painting its picture
 const SCROLL_PX_PER_SECOND = 32;
 
 // Shown before anyone has made a wish.
@@ -26,7 +28,10 @@ let config;
 let items = [];
 let featureIndex = 0;
 let featureTimer = 0;
-let celebrating = false;
+let featureTurnTimer = 0;
+let celebrating = null; // the wish taking over the screen, if any
+let featureFlip;
+let celebrateFlip;
 let scrollOffset = 0;
 let loopHeight = 0;
 
@@ -36,6 +41,8 @@ async function init() {
   snow($("#snow"), { count: 110 });
   setUpSound({ page: "wall", musicButton: true });
   startMusic();
+  featureFlip = makeFlip($("#featureFlip"));
+  celebrateFlip = makeFlip($("#celebrateFlip"));
   config = await applyBranding();
   await refresh();
   listen(
@@ -46,21 +53,24 @@ async function init() {
         setStats(stats);
         celebrate(item);
       },
+      picture: ({ id, pictureUrl }) => pictureReady(id, pictureUrl),
       refresh: () => refresh(),
     },
     () => refresh(),
   );
-  setInterval(refresh, 60_000); // belt and braces in case an event was missed
+  setInterval(() => refresh({ restart: false }), 60_000); // belt and braces in case an event was missed
   requestAnimationFrame(scrollLoop);
 }
 
-async function refresh() {
+async function refresh({ restart = true } = {}) {
   try {
     const data = await api("/api/wall?take=200");
     items = data.items;
     renderList(false);
     setStats(data.stats);
-    if (!celebrating) startFeatureRotation();
+    // Staff changes (hiding a wish, removing a picture) show at once, from the same spot in the rotation.
+    // The once-a-minute check leaves a running rotation alone.
+    if (!celebrating && (restart || !featureTimer)) startFeatureRotation(featureIndex);
   } catch { /* server restarting; try again next tick */ }
 }
 
@@ -114,55 +124,95 @@ function scrollLoop(now) {
 
 // ---- Featured blueprint --------------------------------------------------
 
-function startFeatureRotation() {
-  clearInterval(featureTimer);
-  featureIndex = 0;
-  showFeature();
+const featurePool = () => items.slice(0, 12);
+
+function startFeatureRotation(from = 0, { justPainted = false } = {}) {
+  stopFeatureRotation();
+  featureIndex = from;
+  showFeature({ justPainted });
   featureTimer = setInterval(() => {
     featureIndex++;
     showFeature();
   }, FEATURE_SECONDS * 1000);
 }
 
-function showFeature() {
-  const pool = items.slice(0, 12);
-  const card = $("#featureCard");
+function stopFeatureRotation() {
+  clearInterval(featureTimer);
+  clearTimeout(featureTurnTimer);
+  featureTimer = 0;
+}
+
+function showFeature({ justPainted = false } = {}) {
+  clearTimeout(featureTurnTimer);
+  const pool = featurePool();
+  const host = $("#featureFlip");
   if (pool.length === 0) {
     $("#featureLabel").textContent = "Coming soon to a workshop near you";
-    card.innerHTML = renderBlueprint(SAMPLE, { company: config.companyName });
+    featureFlip.reset();
+    featureFlip.front.innerHTML = renderBlueprint(SAMPLE, { company: config.companyName });
     $("#featureMeta").innerHTML = "";
     return;
   }
   const item = pool[featureIndex % pool.length];
-  $("#featureLabel").textContent = featureIndex % pool.length === 0 ? "Fresh from the workshop" : "From the workshop";
-  card.classList.remove("swap-in");
-  void card.offsetWidth; // restart the CSS animation
-  card.classList.add("swap-in");
-  card.innerHTML = renderBlueprint(item, { company: config.companyName });
+  $("#featureLabel").textContent = justPainted ? "Just painted by the elves"
+    : featureIndex % pool.length === 0 ? "Fresh from the workshop" : "From the workshop";
+  host.classList.remove("swap-in");
+  void host.offsetWidth; // restart the CSS animation
+  host.classList.add("swap-in");
+  featureFlip.reset(item);
+  featureFlip.front.innerHTML = renderBlueprint(item, { company: config.companyName });
   $("#featureMeta").innerHTML = `
     <span class="hand">…${esc(item.wallText)}</span>
     <span class="wall-feature-hours">≈ <b>${fmt(item.hours)}</b> hrs/yr back</span>`;
+  if (item.pictureUrl) {
+    // Blueprint first, then turn over to the picture halfway through; straight away for one that was just painted.
+    featureFlip.show(item.pictureUrl, { turnOver: false });
+    featureTurnTimer = setTimeout(() => featureFlip.show(item.pictureUrl, { sound: justPainted }),
+      justPainted ? 1200 : FEATURE_SECONDS * 500);
+  }
+}
+
+/** A wish's picture just finished painting: show it off, in the takeover if it's still up. */
+function pictureReady(id, pictureUrl) {
+  const item = items.find((i) => i.id === id);
+  if (!item) return;
+  item.pictureUrl = pictureUrl;
+  item.picturePending = false;
+  if (celebrating?.id === id) {
+    celebrateFlip.show(pictureUrl, { sound: true });
+    endCelebrationIn(PICTURE_HOLD_SECONDS);
+  } else if (!celebrating) {
+    const index = featurePool().indexOf(item);
+    if (index >= 0) startFeatureRotation(index, { justPainted: true });
+  }
 }
 
 // ---- New wish celebration ------------------------------------------------
 
 function celebrate(item) {
-  celebrating = true;
-  clearInterval(featureTimer);
+  celebrating = item;
+  stopFeatureRotation();
   $("#celebrateWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(item.wallText)}`;
-  $("#celebrateCard").innerHTML = renderBlueprint(item, { company: config.companyName });
+  celebrateFlip.reset(item);
+  celebrateFlip.front.innerHTML = renderBlueprint(item, { company: config.companyName });
   $("#celebrateMeta").innerHTML = `<span class="chip">${esc(item.category)}</span> ≈ <b>${fmt(item.hours)}</b> hours a year back`;
   const overlay = $("#celebrate");
   overlay.classList.remove("hidden", "leaving");
   sfx("fanfare");
-  startMachine((item.blueprint?.modules ?? []).map((m) => m.kind), $("#celebrateCard svg"), { delay: 1 });
+  startMachine((item.blueprint?.modules ?? []).map((m) => m.kind), celebrateFlip.front.querySelector("svg"), { delay: 1 });
+  endCelebrationIn(CELEBRATE_SECONDS);
+}
+
+function endCelebrationIn(seconds) {
+  const overlay = $("#celebrate");
   clearTimeout(celebrate.timer);
+  clearTimeout(celebrate.leaving);
   celebrate.timer = setTimeout(() => {
     overlay.classList.add("leaving");
-    setTimeout(() => {
+    celebrate.leaving = setTimeout(() => {
       overlay.classList.add("hidden");
-      celebrating = false;
+      celebrating = null;
       startFeatureRotation();
     }, 600);
-  }, CELEBRATE_SECONDS * 1000);
+  }, seconds * 1000);
 }

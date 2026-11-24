@@ -16,22 +16,26 @@ public sealed record HiddenRequest(bool Hidden);
 
 public sealed record SentRequest(bool Sent);
 
+public sealed record PictureRequest(string? Action);
+
 /// <summary>What the kiosk and the guest's phone see. Includes the original text, so only served by id.</summary>
 public sealed record CardDto(
     string Id, int Number, DateTimeOffset CreatedAt, string Text, string WallText, string Category,
-    bool Appropriate, string Source, double ElapsedSeconds, Blueprint Blueprint, PracticalPlan Practical, bool LeadSubmitted)
+    bool Appropriate, string Source, double ElapsedSeconds, Blueprint Blueprint, PracticalPlan Practical, bool LeadSubmitted,
+    string? PictureUrl, bool PicturePending)
 {
     public static CardDto From(Wish w, bool leadSubmitted) => new(
         w.Id, w.Number, w.CreatedAt, w.Text, w.WallText, w.Category, w.Appropriate, w.Source, w.ElapsedSeconds,
-        w.Blueprint, w.Practical, leadSubmitted);
+        w.Blueprint, w.Practical, leadSubmitted, w.PictureUrl, w.PicturePending);
 }
 
 /// <summary>What the public TV wall sees. Never includes the original text.</summary>
 public sealed record WallItem(
-    string Id, int Number, string WallText, string Category, int Hours, DateTimeOffset CreatedAt, Blueprint Blueprint)
+    string Id, int Number, string WallText, string Category, int Hours, DateTimeOffset CreatedAt, Blueprint Blueprint,
+    string? PictureUrl, bool PicturePending)
 {
     public static WallItem From(Wish w) =>
-        new(w.Id, w.Number, w.WallText, w.Category, w.Practical.HoursSavedPerYear, w.CreatedAt, w.Blueprint);
+        new(w.Id, w.Number, w.WallText, w.Category, w.Practical.HoursSavedPerYear, w.CreatedAt, w.Blueprint, w.PictureUrl, w.PicturePending);
 }
 
 public static class Endpoints
@@ -71,12 +75,13 @@ public static class Endpoints
                 PublicBaseUrl = BaseUrl(http, opts),
                 KioskKeyRequired = !string.IsNullOrEmpty(opts.KioskKey),
                 ClaudeEnabled = elf.ClaudeEnabled,
+                PicturesEnabled = opts.PicturesEnabled,
                 Categories = Catalog.Categories,
             };
         });
 
         api.MapPost("/wishes", async (WishRequest req, HttpRequest http, WishStore store, ElfService elf,
-            EventHub hub, IOptions<WorkshopOptions> o, CancellationToken ct) =>
+            PicturePainter painter, EventHub hub, IOptions<WorkshopOptions> o, CancellationToken ct) =>
         {
             if (!KeyMatches(o.Value.KioskKey, http, "X-Kiosk-Key", allowWhenUnset: true))
                 return Results.Json(new { error = "This kiosk needs its key. Open it with /kiosk?key=…" }, statusCode: 401);
@@ -99,15 +104,26 @@ public static class Endpoints
                 Practical = answer.Practical,
             });
 
+            // The picture is painted in the background; the blueprint shows straight away.
+            if (wish.Appropriate) painter.Request(wish.Id);
             if (wish.IsOnWall) hub.Publish("wish", new { item = WallItem.From(wish), stats = store.GetStats() });
 
-            return Results.Ok(new { wish = CardDto.From(wish, false), cardUrl = $"{BaseUrl(http, o.Value)}/c/{wish.Id}" });
+            return Results.Ok(new { wish = CardDto.From(store.GetWish(wish.Id) ?? wish, false), cardUrl = $"{BaseUrl(http, o.Value)}/c/{wish.Id}" });
         }).RequireRateLimiting("wish");
 
         api.MapGet("/wishes/{id}", (string id, WishStore store) =>
             store.GetWish(id) is { } wish
                 ? Results.Ok(CardDto.From(wish, store.HasLeadForWish(id)))
                 : Results.NotFound());
+
+        api.MapGet("/wishes/{id}/picture", (string id, HttpResponse response, WishStore store, PicturePainter painter) =>
+        {
+            var path = painter.PathFor(id);
+            if (store.GetWish(id)?.PictureStatus != PictureStatuses.Ready || !File.Exists(path)) return Results.NotFound();
+            // The URL changes (?v=) whenever a picture is repainted, so browsers can keep it.
+            response.Headers.CacheControl = "public, max-age=604800, immutable";
+            return Results.File(path, "image/png");
+        });
 
         api.MapGet("/wall", (WishStore store, int? take) =>
         {
@@ -178,6 +194,11 @@ public static class Endpoints
                 counterUrl = $"{baseUrl}/counter",
                 backupWishes = wishes.Count(w => w.Source == "backup"),
                 averageSeconds = wishes.Where(w => w.Source == "claude").Select(w => w.ElapsedSeconds).DefaultIfEmpty(0).Average(),
+                picturesEnabled = opts.PicturesEnabled,
+                imageDeployment = opts.PicturesEnabled ? opts.ImageDeployment : null,
+                picturesFailed = wishes.Count(w => w.PictureStatus == PictureStatuses.Failed),
+                averagePictureSeconds = wishes.Where(w => w.PictureStatus == PictureStatuses.Ready && w.PictureSeconds > 0)
+                    .Select(w => w.PictureSeconds).DefaultIfEmpty(0).Average(),
             };
         });
 
@@ -185,7 +206,28 @@ public static class Endpoints
 
         admin.MapPost("/wishes/{id}/hidden", (string id, HiddenRequest req, WishStore store, EventHub hub) =>
         {
-            if (store.SetHidden(id, req.Hidden) is null) return Results.NotFound();
+            if (store.UpdateWish(id, w => w.Hidden = req.Hidden) is null) return Results.NotFound();
+            hub.Publish("refresh", new { stats = store.GetStats() });
+            return Results.Ok();
+        });
+
+        // "remove" takes a picture off every screen; "repaint" asks the image model for a new one.
+        admin.MapPost("/wishes/{id}/picture", (string id, PictureRequest req, WishStore store, PicturePainter painter, EventHub hub) =>
+        {
+            if (store.GetWish(id) is not { } wish) return Results.NotFound();
+            switch (req.Action)
+            {
+                case "remove":
+                    painter.Remove(id);
+                    break;
+                case "repaint" when !wish.Appropriate:
+                    return Results.BadRequest(new { error = "Flagged wishes don't get pictures." });
+                case "repaint":
+                    if (!painter.Request(id)) return Results.BadRequest(new { error = "Pictures are off. Add the Workshop:Image settings first." });
+                    break;
+                default:
+                    return Results.BadRequest(new { error = "Action must be remove or repaint." });
+            }
             hub.Publish("refresh", new { stats = store.GetStats() });
             return Results.Ok();
         });

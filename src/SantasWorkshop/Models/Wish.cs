@@ -29,7 +29,28 @@ public sealed class Wish
     public Blueprint Blueprint { get; set; } = new();
     public PracticalPlan Practical { get; set; } = new();
 
+    /// <summary>The AI-painted picture of the machine: "" (none), pending, ready, failed or removed.</summary>
+    public string PictureStatus { get; set; } = "";
+
+    /// <summary>Goes up each time the picture is repainted, so browsers fetch the new one.</summary>
+    public int PictureVersion { get; set; }
+
+    public double PictureSeconds { get; set; }
+
     public bool IsOnWall => Appropriate && !Hidden;
+
+    public bool PicturePending => PictureStatus == PictureStatuses.Pending;
+
+    /// <summary>Where browsers load the picture from, or null while there isn't one to show.</summary>
+    public string? PictureUrl => PictureStatus == PictureStatuses.Ready ? $"/api/wishes/{Id}/picture?v={PictureVersion}" : null;
+}
+
+public static class PictureStatuses
+{
+    public const string Pending = "pending";
+    public const string Ready = "ready";
+    public const string Failed = "failed";
+    public const string Removed = "removed";
 }
 
 /// <summary>The silly half: a "toy blueprint" for an elf machine that does the job.</summary>

@@ -1,6 +1,7 @@
 import { $, $$, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
 import { gear, renderBlueprint } from "./blueprint.js";
 import { setUpSound, sfx, startMachine, startMusic, stopMusic } from "./sound.js";
+import { makeFlip, waitForPicture } from "./picture.js";
 
 const RESULT_IDLE_SECONDS = 120; // reset to the start screen after this long without a touch
 const ASK_IDLE_SECONDS = 75;     // clear a half-typed wish someone walked away from
@@ -28,6 +29,8 @@ let idleTimer = 0;
 let idleDeadline = 0;
 let idleSeconds = 0;
 let recognition = null;
+let resultFlip;
+let pictureWatch = null; // stops checking for the last guest's picture when the next guest starts
 
 init();
 
@@ -48,6 +51,7 @@ async function init() {
   }
 
   setUpSound({ page: "kiosk", mount: $("#soundSlot") });
+  resultFlip = makeFlip($("#rFlip"), { interactive: true });
   config = await applyBranding();
   setUpVoice();
   showAsk();
@@ -69,6 +73,7 @@ function show(id) {
 
 function showAsk() {
   stopListening();
+  pictureWatch?.abort();
   show("ask");
   $("#wishText").value = "";
   $("#sendBtn").disabled = false;
@@ -150,13 +155,26 @@ function animateWorking() {
 function showResult(wish) {
   $("#rEyebrow").textContent = `Wish #${wish.number} granted!`;
   $("#rWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(wish.text)}`;
-  $("#rBlueprint").innerHTML = renderBlueprint(wish, { company: config.companyName });
+  resultFlip.reset(wish);
+  resultFlip.front.innerHTML = renderBlueprint(wish, { company: config.companyName });
   $("#rPractical").innerHTML = practicalHtml(wish);
   $("#rQr").src = `/qr/${encodeURIComponent(wish.id)}.svg`;
   show("result");
   sfx("fanfare");
-  startMachine((wish.blueprint?.modules ?? []).map((m) => m.kind), $("#rBlueprint svg"), { delay: 1 });
+  startMachine((wish.blueprint?.modules ?? []).map((m) => m.kind), resultFlip.front.querySelector("svg"), { delay: 1 });
   setIdle(RESULT_IDLE_SECONDS, showAsk, true);
+  if (wish.pictureUrl) resultFlip.show(wish.pictureUrl, { turnOver: false });
+  else if (wish.picturePending) showPictureWhenPainted(wish.id);
+}
+
+/** The elves paint the machine in the background; turn the card over to the picture when it's ready. */
+async function showPictureWhenPainted(id) {
+  pictureWatch?.abort();
+  const watch = (pictureWatch = new AbortController());
+  const url = await waitForPicture(id, { signal: watch.signal });
+  if (watch.signal.aborted) return;
+  if (url && await resultFlip.show(url, { sound: true })) bumpIdle();
+  else resultFlip.none();
 }
 
 // ---- Idle handling -------------------------------------------------------

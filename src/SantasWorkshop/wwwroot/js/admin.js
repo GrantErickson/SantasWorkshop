@@ -2,6 +2,7 @@ import { $, $$, api, esc, fmt } from "./common.js";
 
 let key = "";
 let leads = [];
+let pictures = false; // whether the image model is set up
 let refreshTimer = 0;
 
 try { key = localStorage.getItem("adminKey") || ""; } catch { /* private mode */ }
@@ -57,6 +58,7 @@ async function loadAll() {
     adminApi("/summary"), adminApi("/wishes"), adminApi("/leads"),
   ]);
   leads = leadRows;
+  pictures = summary.picturesEnabled;
   renderSummary(summary);
   renderWishes(wishes);
   renderLeads(leadRows);
@@ -73,6 +75,9 @@ function renderSummary(s) {
     ["Leads", fmt(s.stats.leadCount)],
     ["Live TV screens", fmt(s.liveScreens)],
     ["Avg. Claude time", s.averageSeconds ? `${s.averageSeconds.toFixed(1)}s` : "–"],
+    ["Machine pictures", s.picturesEnabled
+      ? `<span class="ok">On ✓</span><br><span class="a-muted">${esc(s.imageDeployment)}${s.averagePictureSeconds ? ` · ${s.averagePictureSeconds.toFixed(1)}s avg` : ""}${s.picturesFailed ? ` · ${s.picturesFailed} failed` : ""}</span>`
+      : `<span class="a-muted">Off</span>`, true],
   ].map(([label, value, small]) => `
     <div class="a-stat"><div class="label">${label}</div><div class="value${small ? " small" : ""}">${value}</div></div>`).join("");
 
@@ -107,7 +112,7 @@ function renderWishes(wishes) {
     return;
   }
   table.innerHTML = `
-    <thead><tr><th>#</th><th>Time</th><th>What they typed</th><th>On the wall as</th><th>Category</th><th class="num">Hrs/yr</th><th>Elf</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th>Time</th><th>What they typed</th><th>On the wall as</th><th>Category</th><th class="num">Hrs/yr</th><th>Elf</th><th>Picture</th><th>Status</th><th></th></tr></thead>
     <tbody>${wishes.map((w) => `
       <tr class="${w.appropriate && !w.hidden ? "" : "is-hidden"}">
         <td>${w.number}</td>
@@ -117,6 +122,7 @@ function renderWishes(wishes) {
         <td>${esc(w.category)}</td>
         <td class="num">${fmt(w.practical.hoursSavedPerYear)}</td>
         <td>${w.source === "claude" ? `Claude <span class="a-muted">${w.elapsedSeconds}s</span>` : `<span class="pill wait">backup</span>`}</td>
+        <td>${pictureCell(w)}</td>
         <td>${!w.appropriate ? `<span class="pill bad">flagged</span>` : w.hidden ? `<span class="pill">hidden</span>` : `<span class="pill good">on wall</span>`}</td>
         <td class="actions">
           ${w.appropriate ? `<button class="btn btn-sm btn-ghost-dark" data-hide="${esc(w.id)}" data-hidden="${!w.hidden}" type="button">${w.hidden ? "Show" : "Hide"}</button>` : ""}
@@ -124,12 +130,39 @@ function renderWishes(wishes) {
         </td>
       </tr>`).join("")}
     </tbody>`;
+  for (const btn of $$("[data-picture]", table)) {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        await adminApi(`/wishes/${btn.dataset.picture}/picture`, { method: "POST", body: { action: btn.dataset.action } });
+      } catch (err) {
+        alert(err.message);
+      }
+      await loadAll();
+    });
+  }
   for (const btn of $$("[data-hide]", table)) {
     btn.addEventListener("click", async () => {
       btn.disabled = true;
       await adminApi(`/wishes/${btn.dataset.hide}/hidden`, { method: "POST", body: { hidden: btn.dataset.hidden === "true" } });
       await loadAll();
     });
+  }
+}
+
+/** Thumbnail and controls for a wish's AI-painted picture, so staff can take a bad one off the screens. */
+function pictureCell(w) {
+  const button = (action, label) =>
+    `<button class="btn btn-sm btn-ghost-dark" data-picture="${esc(w.id)}" data-action="${action}" type="button">${label}</button>`;
+  const repaint = w.appropriate && pictures ? button("repaint", w.pictureStatus === "ready" ? "Repaint" : "Paint") : "";
+  switch (w.pictureStatus) {
+    case "ready":
+      return `<div class="a-pic"><a href="${esc(w.pictureUrl)}" target="_blank" rel="noopener"><img src="${esc(w.pictureUrl)}" alt="" loading="lazy"></a>
+        <span>${button("remove", "Remove")}${repaint}</span></div>`;
+    case "pending": return `<span class="pill wait">painting…</span>`;
+    case "failed": return `<span class="pill bad">failed</span> ${repaint}`;
+    case "removed": return `<span class="pill">removed</span> ${repaint}`;
+    default: return repaint || `<span class="a-muted">–</span>`;
   }
 }
 

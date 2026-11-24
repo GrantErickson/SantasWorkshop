@@ -4,6 +4,7 @@ A booth experience for the Innovate Inland Northwest Christmas party. A guest te
 they wish would disappear. Within seconds they get:
 
 - **A toy blueprint**: a silly, illustrated elf machine that does the job, drawn as an engineering blueprint.
+  A few seconds later the card turns over to an AI-painted picture of the same machine.
 - **A real answer**: how AI could actually handle that task, a pilot to try first, and an estimate of hours saved per year.
 - **A take-home QR code**: opens their card on their phone, where they can opt in to a personalized 90-day AI starter plan
   by email (that's the lead capture).
@@ -35,6 +36,14 @@ dotnet run
 ```
 
 Open http://localhost:5284. In Development the admin key is `elf-admin`.
+
+To turn on the machine pictures, add the image model's settings too (see [Machine pictures](#machine-pictures)):
+
+```powershell
+dotnet user-secrets set "Workshop:ImageEndpoint" "https://<resource>.services.ai.azure.com"
+dotnet user-secrets set "Workshop:ImageDeployment" "MAI-Image-2.5-Flash"
+dotnet user-secrets set "Workshop:ImageKey" "<key>"
+```
 
 Without an API key the app still works: it uses the **backup elf**, a set of hand-written templates matched by
 keywords. The same fallback kicks in automatically if Claude is slow or unreachable on the night, so the kiosk never
@@ -78,6 +87,8 @@ from environment variables.
   Screens panel shows the unlocked kiosk link and its QR code.
 - `Workshop__PublicBaseUrl`: `https://intellitect-santa.azurewebsites.net`
 - `Workshop__DataDirectory`: `D:\home\data`
+- `Workshop__ImageEndpoint`, `Workshop__ImageDeployment` and `Workshop__ImageKey`: the image model for the machine
+  pictures (see [Machine pictures](#machine-pictures)). Leave them out to run without pictures.
 
 **To set it up again from scratch** (only needed if the site was deleted), run this in PowerShell. The site has to be
 in West US, the plan's region:
@@ -123,8 +134,9 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
 
 ## Day-of checklist
 
-1. Open `/admin` and check **Elf brain** says *Claude ✓*. Make a test wish and check the time it took.
-   If it's much over 20 seconds, set `Workshop__UseFastMode=true` (faster, about twice the price per token).
+1. Open `/admin` and check **Elf brain** says *Claude ✓* and **Machine pictures** says *On ✓*. Make a test wish and
+   check the time it took. If it's much over 20 seconds, set `Workshop__UseFastMode=true` (faster, about twice the
+   price per token).
 2. Scan the kiosk QR code in the Screens panel with the tablet. It opens the kiosk already unlocked.
    On an iPad, *Share → Add to Home Screen* gives a full-screen kiosk. Turn on Guided Access to lock it in.
 3. Open `/wall` and `/counter` full screen (F11) on the TVs, then **click once on each one** to turn on sound.
@@ -133,7 +145,8 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
    corner, and its sound starts with the first guest's tap. On an iPad, check the silent switch is off.
 4. Make one wish, scan its QR code with your own phone, and submit the opt-in form to test the whole loop.
    Then hide that test wish in admin so it isn't on the wall.
-5. Keep `/admin` open on a phone. Use **Hide** if anything unfortunate makes it onto the wall.
+5. Keep `/admin` open on a phone. Use **Hide** if anything unfortunate makes it onto the wall, or **Remove** in the
+   Picture column if only the picture is the problem (**Repaint** asks for a new one).
 
 ## Settings (`Workshop` section of appsettings.json)
 
@@ -153,6 +166,10 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
 | `UseFastMode` | false | Opus 5.5 fast mode; falls back to standard speed if rate limited. |
 | `ClaudeTimeoutSeconds` | 40 | After this, the backup elf answers instead. |
 | `UseBackupElfOnly` | false | Never call Claude. |
+| `ImageEndpoint` | *(empty = no pictures)* | The Foundry resource, e.g. `https://my-resource.services.ai.azure.com`. |
+| `ImageDeployment` | *(empty = no pictures)* | The MAI image model's deployment name in Foundry. |
+| `ImageKey` | *(empty = no pictures)* | The resource's API key. Keep it in user-secrets or the portal, never in this repo. |
+| `ImageTimeoutSeconds` | 90 | Per attempt; a picture gets three attempts before it's marked failed. |
 
 ## How Claude is used
 
@@ -169,8 +186,27 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
   plays effects and a jingle while the elves work, and the counter ticks and cha-chings as the hours go up. When a
   blueprint appears, each part lights up and makes its own noise, left to right.
 - **One call per lead**, in the background, writes the personalized starter plan.
+- **The machine pictures come from a Microsoft MAI image model, not Claude** (see below).
 - **Server-side refusal fallback** (`server-side-fallback-2026-07-01` beta) is on: if a safety classifier declines
   a request, the API retries it on a fallback model inside the same call. Anything else that fails drops to the backup elf.
+
+## Machine pictures
+
+After the blueprint appears, `Services/PicturePainter.cs` asks a Microsoft MAI image model (deployed in Microsoft
+Foundry) to paint the same machine, in the background. It takes about 12 seconds with MAI-Image-2.5-Flash. Then:
+
+- the kiosk card turns over from the blueprint to the picture with a chime, and guests can tap to turn it back;
+- the wall shows it in the takeover if that's still up, otherwise in the featured spot as "Just painted by the
+  elves", and afterwards each featured wish turns over to its picture halfway through its turn;
+- the guest's phone card shows it under the blueprint (or "The elves are painting…" until it's ready).
+
+The prompt is built from the blueprint's parts plus Claude's anonymized wall text, never the guest's own words, and
+asks for no text in the image. Flagged wishes don't get pictures, and every picture is labelled "Painted by AI".
+Pictures are 1280 × 800 PNGs (about 2 MB) saved in `pictures/` inside the data folder.
+
+Each picture is billed by the Foundry resource. The booth paints one at a time and waits and retries when the model
+says it's busy, so check the deployment's requests-per-minute limit in Foundry covers a busy booth (a wish every
+30 seconds or so). If a picture fails, the blueprint simply stays, and admin can **Repaint** it.
 
 ## Follow-up emails
 

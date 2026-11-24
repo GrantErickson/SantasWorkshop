@@ -26,6 +26,10 @@
 
 .c-practical { margin-top: 16px; font-size: 1rem; }
 
+.c-picture { margin: 16px 0 0; }
+.c-picture figcaption { margin-top: 8px; text-align: center; color: var(--frost); font-size: .9rem; }
+.c-picture.painting .picture-card { animation: painting-glow 1.6s ease-in-out infinite; }
+
 .optin {
   margin-top: 16px;
   padding: 1.3em 1.3em 1.5em;

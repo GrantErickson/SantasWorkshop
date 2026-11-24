@@ -164,7 +164,7 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 
 /* The blueprint drawing is 960 × 600. It gets about 59% of the width, but never more than 1.6× the height available,
    or on wide screens it spills over the wish above and the QR code below. Any width it gives up goes to the answer. */
-.r-grid .blueprint-card { flex: none; width: 59%; width: min(59%, 160cqh); }
+.r-grid .flip { flex: none; width: 59%; width: min(59%, 160cqh); }
 
 .r-practical { flex: 1; min-width: 0; font-size: .95rem; max-height: 100%; overflow: auto; }
 .r-practical h3 { font-size: 1.2rem; }
@@ -200,7 +200,7 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
   body.kiosk { overflow: auto; }
   .k-main { height: auto; min-height: 100dvh; }
   .r-grid { flex-direction: column; align-items: stretch; container-type: normal; }
-  .r-grid .blueprint-card { width: auto; }
+  .r-grid .flip { width: auto; }
   .r-practical { flex: none; max-height: none; }
   .r-foot { flex-direction: column; align-items: stretch; }
   .r-actions { align-items: center; }

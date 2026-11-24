@@ -41,4 +41,25 @@ public sealed class WorkshopOptions
 
     /// <summary>Skip Claude entirely and use the offline template elf.</summary>
     public bool UseBackupElfOnly { get; set; }
+
+    // Machine pictures (optional): a Microsoft MAI image model deployed in Microsoft Foundry paints each machine.
+    // Pictures are off until ImageEndpoint, ImageKey and ImageDeployment are all set.
+
+    /// <summary>
+    /// The Foundry resource, e.g. https://my-resource.services.ai.azure.com, or the deployment's full
+    /// .../mai/v1/images/generations URL.
+    /// </summary>
+    public string? ImageEndpoint { get; set; }
+
+    public string? ImageKey { get; set; }
+
+    /// <summary>The deployment name given to the MAI image model in Foundry (sent as "model").</summary>
+    public string? ImageDeployment { get; set; }
+
+    /// <summary>One attempt at painting a picture gives up after this long.</summary>
+    public int ImageTimeoutSeconds { get; set; } = 90;
+
+    public bool PicturesEnabled =>
+        !string.IsNullOrWhiteSpace(ImageEndpoint) && !string.IsNullOrWhiteSpace(ImageKey) &&
+        !string.IsNullOrWhiteSpace(ImageDeployment);
 }

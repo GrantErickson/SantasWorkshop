@@ -51,4 +51,5 @@ for ($try = 0; $try -lt 24 -and -not $config; $try++) {
 }
 if (-not $config) { throw "Deployed, but $url isn't answering after two minutes. Check the site in the Azure portal." }
 $brain = if ($config.claudeEnabled) { "Claude" } else { "backup elf only (ANTHROPIC_API_KEY isn't set)" }
-Write-Host "Deployed: $url  (elf brain: $brain)" -ForegroundColor Green
+$pictures = if ($config.picturesEnabled) { "on" } else { "off (Workshop__Image* settings aren't set)" }
+Write-Host "Deployed: $url  (elf brain: $brain; machine pictures: $pictures)" -ForegroundColor Green

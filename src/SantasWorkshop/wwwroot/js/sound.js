@@ -38,19 +38,27 @@ export function setUpSound({ page, mount = null, musicButton = false }) {
   const box = document.createElement("div");
   box.className = mount ? "sound-ctl sound-ctl-inline" : "sound-ctl";
   (mount || document.body).appendChild(box);
+  let layout = "";
   const render = () => {
-    box.classList.toggle("locked", !mount && !running());
-    if (!mount && !running()) {
-      box.innerHTML = `<button type="button" class="sound-unlock">🔈 Click anywhere for sound${musicButton ? " &amp; music" : ""}</button>`;
-      return;
+    const locked = !mount && !running();
+    box.classList.toggle("locked", locked);
+    if (layout !== (locked ? "locked" : "buttons")) {
+      layout = locked ? "locked" : "buttons";
+      box.innerHTML = locked
+        ? `<button type="button" class="sound-unlock">🔈 Click anywhere for sound${musicButton ? " &amp; music" : ""}</button>`
+        : `<button type="button" class="sound-btn" data-pref="sound" aria-label="Sound"></button>` +
+          (musicButton ? `<button type="button" class="sound-btn" data-pref="music" aria-label="Music">🎵</button>` : "");
     }
-    box.innerHTML =
-      `<button type="button" class="sound-btn${prefs.sound ? "" : " off"}" data-pref="sound" aria-pressed="${prefs.sound}"
-         aria-label="Sound" title="Sound ${prefs.sound ? "on" : "off"}${mount ? "" : " (S)"}">${prefs.sound ? "🔊" : "🔇"}</button>` +
-      (musicButton
-        ? `<button type="button" class="sound-btn${prefs.music ? "" : " off"}" data-pref="music" aria-pressed="${prefs.music}"
-             aria-label="Music" title="Music ${prefs.music ? "on" : "off"} (M)">🎵</button>`
-        : "");
+    // Update the buttons in place rather than redrawing them: the press that starts the audio changes its state
+    // mid-click, and a redrawn button would never receive that click.
+    for (const btn of box.querySelectorAll("[data-pref]")) {
+      const name = btn.dataset.pref;
+      const on = prefs[name];
+      btn.classList.toggle("off", !on);
+      btn.setAttribute("aria-pressed", String(on));
+      btn.title = `${name === "sound" ? "Sound" : "Music"} ${on ? "on" : "off"}${mount ? "" : name === "sound" ? " (S)" : " (M)"}`;
+      if (name === "sound") btn.textContent = on ? "🔊" : "🔇";
+    }
   };
   box.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-pref]");
@@ -235,6 +243,15 @@ const FX = {
   },
   freeTime: (t) => {
     [1568, 1975.5, 2349.3, 3136].forEach((f, i) => bell(f, t + i * 0.07, 0.7, 0.08));
+  },
+  reveal: (t) => {
+    // A harp sweep up a C major chord, then a sparkle: the elves' painting is ready.
+    [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568, 2093].forEach((f, i) => {
+      tone("triangle", f, t + i * 0.055, 0.9, 0.07);
+      tone("sine", f * 2, t + i * 0.055, 0.4, 0.025);
+    });
+    noise(t + 0.3, 0.8, 0.05, { type: "highpass", freq: 6000, attack: 0.2 });
+    bell(3136, t + 0.45, 1.2, 0.06);
   },
 };
 

@@ -224,6 +224,68 @@ button.chip:hover { background: rgba(255, 255, 255, .16); color: var(--snow); }
 
 .blueprint-card svg { width: 100%; height: auto; display: block; }
 
+/* The AI-painted picture of the machine, the same 16:10 shape as the blueprint. */
+.picture-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--night-2);
+  aspect-ratio: 16 / 10;
+}
+
+.picture-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.picture-tag {
+  position: absolute;
+  left: 2.5%;
+  bottom: 4%;
+  padding: .3em .75em;
+  border-radius: 999px;
+  background: rgba(11, 29, 51, .72);
+  color: var(--snow);
+  font-size: .8rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+/* A card that turns over from the blueprint (front) to the picture (back). */
+.flip { position: relative; perspective: 2400px; }
+.flip-inner { display: grid; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.3, 1.25, .5, 1); }
+.flip.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-front, .flip-back { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-back { transform: rotateY(180deg); }
+
+.flip-btn {
+  position: absolute;
+  right: 2.5%;
+  bottom: 4%;
+  z-index: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: .45em 1em;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--gold);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .3);
+  cursor: pointer;
+}
+
+.flip-btn:disabled { cursor: default; }
+.flip-btn.painting { background: rgba(11, 29, 51, .78); color: var(--snow); animation: painting-glow 1.6s ease-in-out infinite; }
+
+@keyframes painting-glow {
+  50% { box-shadow: 0 0 0 3px rgba(244, 201, 93, .55), 0 0 22px rgba(244, 201, 93, .45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner { transition: none; }
+  .flip-btn.painting, .c-picture.painting .picture-card { animation: none; }
+}
+
 /* Blueprint motion: the machine comes alive. Parts are drawn around (0,0) with their base near y = 50,
    so transform-origin values below are in each part's own coordinates. */
 @keyframes bp-spin { to { transform: rotate(360deg); } }
@@ -352,7 +414,8 @@ button.chip:hover { background: rgba(255, 255, 255, .16); color: var(--snow); }
 .sound-btn { width: 2.4rem; height: 2.4rem; padding: 0; font-size: 1.1rem; display: grid; place-items: center; opacity: .3; transition: opacity .2s; }
 .sound-btn:hover, .sound-btn:focus-visible { opacity: 1; }
 .sound-btn.off { text-decoration: line-through; }
-.sound-ctl-inline .sound-btn { opacity: .85; }
+.sound-ctl-inline .sound-btn { opacity: 1; width: 2.9rem; height: 2.9rem; font-size: 1.3rem; touch-action: manipulation; }
+.sound-ctl-inline .sound-btn.off { background: rgba(200, 16, 46, .55); border-color: rgba(255, 179, 189, .6); }
 .sound-unlock {
   padding: .55em 1.3em;
   font-weight: 800;

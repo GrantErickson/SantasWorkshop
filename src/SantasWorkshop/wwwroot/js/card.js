@@ -1,5 +1,6 @@
 import { $, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
 import { renderBlueprint } from "./blueprint.js";
+import { waitForPicture } from "./picture.js";
 
 const wishId = decodeURIComponent(location.pathname.split("/").filter(Boolean).pop() || "");
 
@@ -26,6 +27,7 @@ async function init() {
   $("#loading").classList.add("hidden");
   $("#card").classList.remove("hidden");
 
+  showPicture(wish);
   if (wish.leadSubmitted) showThanks();
   $("#leadForm").addEventListener("submit", submit);
 }
@@ -67,6 +69,26 @@ async function submit(e) {
     error.textContent = message;
     field?.focus();
   }
+}
+
+/** The AI-painted picture of the machine. If the elves are still painting it, wait for it here. */
+async function showPicture(wish) {
+  const figure = $("#cPicture");
+  const img = $("#cPictureImg");
+  const caption = $("#cPictureCap");
+  img.alt = `An AI-painted picture of the ${wish.blueprint.machineName}`;
+  let url = wish.pictureUrl;
+  if (!url && wish.picturePending) {
+    figure.classList.remove("hidden");
+    figure.classList.add("painting");
+    caption.textContent = "🎨 The elves are painting a picture of your machine. It'll appear here in a moment…";
+    url = await waitForPicture(wish.id);
+  }
+  if (!url) { figure.classList.add("hidden"); return; }
+  img.src = url;
+  try { await img.decode(); } catch { figure.classList.add("hidden"); return; }
+  figure.classList.remove("hidden", "painting");
+  caption.textContent = "🎨 Your machine, as painted by AI";
 }
 
 function showThanks() {

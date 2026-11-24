@@ -11,6 +11,10 @@ builder.Services.AddSingleton<BackupElf>();
 builder.Services.AddSingleton<ElfService>();
 builder.Services.AddSingleton<PlanWorker>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<PlanWorker>());
+builder.Services.AddSingleton<PicturePainter>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<PicturePainter>());
+// PicturePainter applies its own per-attempt timeout (Workshop:ImageTimeoutSeconds).
+builder.Services.AddHttpClient(PicturePainter.HttpClientName, c => c.Timeout = Timeout.InfiniteTimeSpan);
 
 builder.Services.AddRateLimiter(options =>
 {

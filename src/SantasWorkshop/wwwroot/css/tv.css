@@ -108,7 +108,9 @@ body.tv { overflow: hidden; cursor: none; }
   margin-bottom: .8em;
 }
 
-.wall-feature .blueprint-card.swap-in { animation: swap-in .7s ease both; }
+.wall-feature .flip.swap-in { animation: swap-in .7s ease both; }
+
+.tv .flip-btn, .tv .picture-tag { font-size: 1.05rem; }
 
 @keyframes swap-in { from { opacity: 0; transform: translateY(14px) scale(.98); } }
 

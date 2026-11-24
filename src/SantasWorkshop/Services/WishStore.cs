@@ -27,12 +27,16 @@ public sealed class WishStore
             ? _options.DataDirectory
             : Path.Combine(env.ContentRootPath, _options.DataDirectory);
         Directory.CreateDirectory(dir);
+        DataDirectory = dir;
         _wishPath = Path.Combine(dir, "wishes.json");
         _leadPath = Path.Combine(dir, "leads.json");
         _wishes = Load<Wish>(_wishPath);
         _leads = Load<Lead>(_leadPath);
         logger.LogInformation("Loaded {Wishes} wishes and {Leads} leads from {Dir}", _wishes.Count, _leads.Count, dir);
     }
+
+    /// <summary>Full path of the folder holding the data files (and the machine pictures).</summary>
+    public string DataDirectory { get; }
 
     public Wish AddWish(Wish wish)
     {
@@ -56,13 +60,13 @@ public sealed class WishStore
         lock (_gate) return _wishes.OrderByDescending(w => w.Number).ToList();
     }
 
-    public Wish? SetHidden(string id, bool hidden)
+    public Wish? UpdateWish(string id, Action<Wish> change)
     {
         lock (_gate)
         {
             var wish = _wishes.FirstOrDefault(w => w.Id == id);
             if (wish is null) return null;
-            wish.Hidden = hidden;
+            change(wish);
             Save(_wishPath, _wishes);
             return wish;
         }
