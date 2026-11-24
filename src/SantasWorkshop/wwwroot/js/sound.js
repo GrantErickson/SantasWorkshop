@@ -361,6 +361,8 @@ const TRACKS = {
 };
 
 const ALL_TRACKS = Object.keys(TRACKS);
+const RETRY_SECONDS = 30; // if no track will load (the Wi-Fi dropped, the site is restarting), try again this often
+const STALL_SECONDS = 20; // skip a track that's been stuck loading this long
 const nowPlaying = new Set();
 
 /** Calls fn with the track now playing ({ title, by, license }), or null when the music stops. */
@@ -435,15 +437,27 @@ function playNext(m, lively = false) {
     m.player = null;
     announce(null);
     m.misses = failed ? m.misses + 1 : 0;
-    if (m.misses >= musicOpts.playlist.length) return; // nothing will load; stay quiet rather than spin
-    m.gap = setTimeout(() => playNext(m), failed ? 0 : 1500); // a breath between carols
+    let wait = failed ? 0 : 1.5; // a breath between carols
+    if (m.misses >= musicOpts.playlist.length) {
+      m.misses = 0;
+      wait = RETRY_SECONDS; // none of them will load right now; don't give up for the night
+    }
+    m.gap = setTimeout(() => playNext(m), wait * 1000);
+  };
+  const watchForStall = () => {
+    clearTimeout(player.stall);
+    player.stall = setTimeout(() => done(true), STALL_SECONDS * 1000);
   };
   el.addEventListener("ended", () => done(false));
   el.addEventListener("error", () => done(true));
+  el.addEventListener("waiting", watchForStall);
+  el.addEventListener("playing", () => clearTimeout(player.stall));
+  watchForStall();
   el.play().then(() => { if (m.player === player) announce(track); }, () => done(true));
 }
 
-function release({ el, node }) {
+function release({ el, node, stall }) {
+  clearTimeout(stall);
   el.pause();
   el.removeAttribute("src");
   el.load(); // lets the browser drop the download
