@@ -12,4 +12,9 @@
     <PackageReference Include="QRCoder" Version="1.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Booth data (guests' wishes and contact details) stays on the machine that collected it; never publish it. -->
+    <Content Update="App_Data\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
 </Project>

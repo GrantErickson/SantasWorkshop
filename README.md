@@ -40,24 +40,75 @@ Without an API key the app still works: it uses the **backup elf**, a set of han
 keywords. The same fallback kicks in automatically if Claude is slow or unreachable on the night, so the kiosk never
 shows an error.
 
-## Booth night: pick a hosting option
+## Hosting
 
-Guests' phones must be able to open the QR code link, so the site needs an address they can reach.
+Guests' phones must be able to open the QR code link, so the site needs a public address. HTTPS also turns on the
+kiosk's microphone button.
 
-**Option A: host it publicly (recommended).** Deploy to Azure App Service (or anything that runs .NET 10). QR codes
-work over cellular, and HTTPS enables the kiosk's microphone button. Then:
+### Our deployment: Azure App Service
 
-- Run a **single instance** (wishes are kept in memory and in a JSON file).
-- Set these app settings (double underscores are how .NET reads nested settings from environment variables):
-  - `ANTHROPIC_API_KEY`
-  - `Workshop__AdminKey`: any long secret
-  - `Workshop__KioskKey`: any secret, so only your tablet can submit wishes and spend API credits
-  - `Workshop__PublicBaseUrl`: e.g. `https://santa.example.com`
-  - `Workshop__DataDirectory`: a writable, persistent folder, e.g. `/home/data` on Linux App Service
-    (the deployed site folder can be read-only)
-- Turn on **Always On** so the live TV connections aren't dropped.
+The booth runs at **https://intellitect-santa.azurewebsites.net**.
 
-**Option B: run it from a laptop on the venue Wi-Fi.**
+| | |
+|---|---|
+| Subscription | Microsoft Partner Azure Sponsorship (IntelliTect Entra tenant) |
+| Resource group | `intellitect-santa`, which holds only this site |
+| App Service plan | `CoalesceAppServicePlan` (Windows, P1v3) in `CoalesceResourceGroup`. It's shared with other IntelliTect sites, so the booth costs nothing extra. |
+| Site | `intellitect-santa`: .NET 10, 64-bit, Always On, HTTPS only |
+
+**To deploy a change**, sign in with `az login` using your IntelliTect account, then run this from the repo root in
+PowerShell:
+
+```powershell
+./deploy.ps1
+```
+
+It builds a Release copy, uploads it, and checks that the site answers. Guests' data in `App_Data/` is never
+included. On the server, wishes and leads live in `D:\home\data`, which survives deploys and restarts. A deploy
+restarts the site: the TVs reconnect on their own, but a wish in progress on the kiosk would fail, so avoid deploying
+in the middle of the party.
+
+**Settings and secrets** are set in the Azure portal (the site's **Settings → Environment variables** page), never in
+this repo, which is public. Changing one restarts the site. Double underscores are how .NET reads nested settings
+from environment variables.
+
+- `ANTHROPIC_API_KEY`
+- `Workshop__AdminKey`: the password for `/admin`
+- `Workshop__KioskKey`: only a kiosk opened with `?key=...` can submit wishes and spend API credits. The admin page's
+  Screens panel shows the unlocked kiosk link and its QR code.
+- `Workshop__PublicBaseUrl`: `https://intellitect-santa.azurewebsites.net`
+- `Workshop__DataDirectory`: `D:\home\data`
+
+**To set it up again from scratch** (only needed if the site was deleted), run this in PowerShell. The site has to be
+in West US, the plan's region:
+
+```powershell
+$sub = "Microsoft Partner Azure Sponsorship"; $rg = "intellitect-santa"; $app = "intellitect-santa"
+$plan = az appservice plan show --subscription $sub -g CoalesceResourceGroup -n CoalesceAppServicePlan --query id -o tsv
+az group create --subscription $sub -n $rg -l westus
+az webapp create --subscription $sub -g $rg -p $plan -n $app --runtime "dotnet:10"
+az webapp update --subscription $sub -g $rg -n $app --https-only true
+az webapp config set --subscription $sub -g $rg -n $app --always-on true --use-32bit-worker-process false --ftps-state Disabled
+az webapp config appsettings set --subscription $sub -g $rg -n $app --settings `
+  "Workshop__PublicBaseUrl=https://$app.azurewebsites.net" 'Workshop__DataDirectory=D:\home\data'
+```
+
+Then add `ANTHROPIC_API_KEY`, `Workshop__AdminKey` and `Workshop__KioskKey` in the portal and run `./deploy.ps1`.
+
+**After the party**, download the leads CSV from admin first, because deleting the site deletes its data. Then remove
+the booth. This deletes only the booth's resource group; the shared plan and its other sites stay.
+
+```powershell
+az group delete --subscription "Microsoft Partner Azure Sponsorship" -n intellitect-santa
+```
+
+### Other ways to host it
+
+**Another host.** Anything that runs .NET 10 works. Run a **single instance** (wishes are kept in memory and in a
+JSON file), set the settings above, keep it always on so the live TV connections aren't dropped, and point
+`Workshop__DataDirectory` at storage that survives restarts (for example `/home/data` on Linux App Service).
+
+**A laptop on the venue Wi-Fi.**
 
 ```powershell
 $env:ANTHROPIC_API_KEY = "sk-ant-..."
