@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d33">
+  <title>Your Elf Machine</title>
+  <link rel="stylesheet" href="/css/workshop.css">
+  <link rel="stylesheet" href="/css/card.css">
+</head>
+<body>
+  <canvas id="snow" aria-hidden="true"></canvas>
+
+  <main class="layer c-main">
+    <header class="c-top">
+      <span class="festive title-glow c-title">Santa's <em>AI</em> Workshop</span>
+      <span class="brand" data-brand></span>
+    </header>
+
+    <div id="loading" class="c-loading">Fetching your blueprint from the North Pole…</div>
+
+    <div id="missing" class="c-missing hidden">
+      <h1 class="festive title-glow">Hmm, no blueprint here</h1>
+      <p>We couldn't find that wish. Double-check the link, or come make a new one at the booth!</p>
+    </div>
+
+    <article id="card" class="hidden">
+      <p class="c-eyebrow" id="cEyebrow"></p>
+      <h1 class="c-wish" id="cWish"></h1>
+      <div class="blueprint-card" id="cBlueprint"></div>
+      <div class="practical c-practical" id="cPractical"></div>
+
+      <section class="optin" id="optin">
+        <h2>Get your free AI starter plan</h2>
+        <p>We'll email you a short, personalized 90-day plan for turning this wish into a working pilot at your company.</p>
+        <form id="leadForm" novalidate>
+          <label>Your name <input name="name" autocomplete="name" required maxlength="100"></label>
+          <label>Work email <input name="email" type="email" autocomplete="email" inputmode="email" required maxlength="200"></label>
+          <label>Company <input name="company" autocomplete="organization" required maxlength="120"></label>
+          <label><span>Role <span class="opt">(optional)</span></span> <input name="role" autocomplete="organization-title" maxlength="120"></label>
+          <label class="consent"><input name="consent" type="checkbox" required> <span>Yes, email me my starter plan. <span data-company></span> may follow up about it. No spam, no sharing.</span></label>
+          <p class="form-error" id="formError" role="alert"></p>
+          <button class="btn btn-primary" type="submit" id="leadBtn">Send me my plan</button>
+        </form>
+      </section>
+
+      <section class="optin thanks hidden" id="thanks">
+        <h2>You're on the nice list! 🎁</h2>
+        <p>Your personalized AI starter plan is on its way. Look for it in your inbox in the next day or so.</p>
+        <p>In the meantime, bookmark this page to keep your blueprint.</p>
+      </section>
+    </article>
+
+    <footer class="c-foot">
+      This booth was built with AI by <b data-company></b> in <span data-days></span>.<br>
+      <a data-company-url></a>
+    </footer>
+  </main>
+
+  <script type="module" src="/js/card.js"></script>
+</body>
+</html>

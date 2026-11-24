@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Workshop Admin</title>
+  <link rel="stylesheet" href="/css/workshop.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin">
+  <main class="a-main">
+    <header class="a-head">
+      <h1><span class="festive">Santa's AI Workshop</span> · Elf Control Room</h1>
+      <button class="a-link" id="signOut" type="button">Sign out</button>
+    </header>
+
+    <form id="keyForm" class="a-card a-key hidden">
+      <h2>Staff only</h2>
+      <p>Enter the admin key (the <code>Workshop:AdminKey</code> setting).</p>
+      <input id="keyInput" type="password" autocomplete="current-password" placeholder="Admin key">
+      <button class="btn btn-primary" type="submit">Open the control room</button>
+      <p class="a-error" id="keyError"></p>
+    </form>
+
+    <div id="app" class="hidden">
+      <div class="a-alert hidden" id="alertLocal"></div>
+      <div class="a-alert hidden" id="alertBackup"></div>
+
+      <section class="a-stats" id="stats"></section>
+
+      <section class="a-card a-screens">
+        <h2>Screens</h2>
+        <div class="a-screen-grid">
+          <div>
+            <h3>Kiosk (tablet)</h3>
+            <p><a id="kioskLink" target="_blank" rel="noopener"></a></p>
+            <p class="a-muted">Scan with the tablet to open it unlocked. Add it to the home screen for full-screen mode.</p>
+          </div>
+          <img id="kioskQr" alt="QR code that opens the kiosk" width="140" height="140">
+          <div>
+            <h3>TV 1: Wish wall</h3>
+            <p><a id="wallLink" target="_blank" rel="noopener"></a></p>
+            <h3>TV 2: Hours counter</h3>
+            <p><a id="counterLink" target="_blank" rel="noopener"></a></p>
+            <p class="a-muted">Open full screen (F11) on each TV. They update live.</p>
+          </div>
+        </div>
+      </section>
+
+      <nav class="a-tabs" role="tablist">
+        <button role="tab" class="active" data-tab="wishes" type="button">Wishes</button>
+        <button role="tab" data-tab="leads" type="button">Leads</button>
+      </nav>
+
+      <section id="tab-wishes" class="a-card">
+        <p class="a-muted">Hiding a wish removes it from the wall and the counter. Wishes the elf flagged as unsuitable are never shown.</p>
+        <div class="a-table-wrap"><table class="a-table" id="wishTable"></table></div>
+      </section>
+
+      <section id="tab-leads" class="a-card hidden">
+        <div class="a-row">
+          <p class="a-muted">Each lead gets a personalized starter plan written in the background. Preview it, copy it into an email, then mark it sent.</p>
+          <a class="btn btn-gold" id="csvLink">Download CSV</a>
+        </div>
+        <div class="a-table-wrap"><table class="a-table" id="leadTable"></table></div>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="emailDialog" class="a-dialog">
+    <form method="dialog" class="a-dialog-head">
+      <div>
+        <div class="a-muted" id="emailTo"></div>
+        <h2 id="emailSubject"></h2>
+      </div>
+      <button class="a-link" value="close">Close ✕</button>
+    </form>
+    <iframe id="emailFrame" title="Email preview" sandbox=""></iframe>
+    <div class="a-dialog-actions">
+      <button class="btn btn-primary" id="copyHtml" type="button">Copy formatted email</button>
+      <button class="btn btn-ghost-dark" id="copyText" type="button">Copy plain text</button>
+      <a class="btn btn-ghost-dark" id="mailto">Open in mail app</a>
+      <span class="a-muted" id="copyStatus"></span>
+    </div>
+  </dialog>
+
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>

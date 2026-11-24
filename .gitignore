@@ -1,0 +1,6 @@
+bin/
+obj/
+.vs/
+*.user
+# Booth data: wishes and guest contact details. Never commit.
+App_Data/

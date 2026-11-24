@@ -1,0 +1,240 @@
+/* TV screens (wall + counter). Designed for 16:9 at any resolution, so everything is sized in vw/vh. */
+html { font-size: 1.05vw; }
+
+body.tv { overflow: hidden; cursor: none; }
+
+.tv-main {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Generous edges: many TVs overscan and crop the outer few percent. */
+  padding: 2.2vh 2.8vw 2vh;
+}
+
+.tv-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.tv-title { font-size: 4.4rem; margin: 0; }
+.tv-head-brand { font-size: 1.8rem; }
+
+.tv-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  font-size: 1.35rem;
+  color: var(--frost);
+  padding-top: 1.4vh;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.tv-foot > * { white-space: nowrap; }
+.tv-foot .brand { font-size: 1.6rem; }
+.tv-foot b { color: var(--gold); }
+.tv-cta { font-weight: 800; color: var(--gold); }
+
+/* ---- Wall ---- */
+.mini-counter { text-align: right; }
+.mini-num { font-size: 3.6rem; font-weight: 900; color: var(--gold); line-height: 1; }
+.mini-label { font-size: 1.15rem; font-weight: 700; color: var(--frost); }
+
+.wall-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+  gap: 2.6vw;
+  padding: 2vh 0;
+}
+
+.wall-list-wrap { display: flex; flex-direction: column; min-height: 0; }
+
+.wall-list-title {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: 2.6rem;
+  color: var(--gold);
+  margin: 0 0 .4em;
+}
+
+.wall-viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(transparent, #000 6%, #000 88%, transparent);
+  mask-image: linear-gradient(transparent, #000 6%, #000 88%, transparent);
+}
+
+.wall-list { will-change: transform; }
+
+.wall-item {
+  display: flex;
+  flex-direction: column;
+  gap: .35em;
+  padding: .9em 1.1em;
+  margin-bottom: .8em;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .06);
+  border: 1.5px solid rgba(255, 255, 255, .1);
+}
+
+.wall-item-text { font-size: 2.05rem; font-weight: 800; line-height: 1.2; }
+.wall-item-text::before { content: "…"; color: var(--gold); }
+
+.wall-item-meta { display: flex; align-items: center; gap: .8em; font-size: 1.1rem; color: var(--muted); }
+.wall-item-meta .chip { font-size: 1rem; padding: .2em .8em; }
+.wall-item-meta b { color: var(--frost); }
+
+.wall-item.fresh { animation: fresh 3s ease 1; border-color: var(--gold); background: rgba(244, 201, 93, .12); }
+
+@keyframes fresh { 0% { transform: scale(.94); opacity: 0; } 12% { transform: scale(1.02); opacity: 1; } 25% { transform: scale(1); } }
+
+.wall-sep { text-align: center; color: var(--muted); font-size: 1.4rem; padding: 1.2em 0 2em; letter-spacing: .5em; }
+
+.wall-empty { font-family: var(--font-hand); font-size: 2.4rem; color: var(--frost); padding-top: 1em; }
+
+.wall-feature { display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+
+.wall-feature-label {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--gold);
+  font-size: 1.15rem;
+  margin-bottom: .8em;
+}
+
+.wall-feature .blueprint-card.swap-in { animation: swap-in .7s ease both; }
+
+@keyframes swap-in { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+
+.wall-feature-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-top: 1em;
+  font-size: 1.5rem;
+}
+
+.wall-feature-meta .hand { font-family: var(--font-hand); color: var(--frost); }
+.wall-feature-hours { white-space: nowrap; color: var(--frost); }
+.wall-feature-hours b { color: var(--gold); font-size: 1.3em; }
+
+/* New-wish takeover */
+.celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse at center, rgba(11, 29, 51, .82), rgba(5, 12, 24, .95));
+  animation: fade-in .5s ease both;
+}
+
+.celebrate.leaving { animation: fade-out .6s ease both; }
+
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+
+/* The blueprint is 16:10, so cap the width by the height left after the text above and below it. */
+.celebrate-card {
+  width: min(56vw, calc((100vh - 23rem) * 1.6));
+  text-align: center;
+  animation: pop .7s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+
+.celebrate-eyebrow { font-size: 3.4rem; color: var(--gold); margin-bottom: .15em; }
+.celebrate-wish { font-size: 2.2rem; font-weight: 800; margin-bottom: .6em; line-height: 1.2; }
+.celebrate-wish .hand { font-family: var(--font-hand); font-weight: 400; color: var(--gold); }
+.celebrate-meta { margin-top: 1em; font-size: 1.7rem; color: var(--frost); display: flex; justify-content: center; align-items: center; gap: .6em; }
+.celebrate-meta b { color: var(--gold); font-size: 1.3em; }
+
+/* ---- Counter ---- */
+.counter-hero { text-align: center; padding: 1vh 0 0; }
+
+.counter-label { font-size: 2.2rem; font-weight: 800; color: var(--frost); }
+
+.odometer {
+  display: inline-flex;
+  align-items: flex-end;
+  margin: .12em 0 .08em;
+  font-size: 9.5rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--snow);
+  /* drop-shadow glows around the visible glyphs; text-shadow would be clipped by each digit window */
+  filter: drop-shadow(0 0 28px rgba(244, 201, 93, .4));
+}
+
+.odometer .digit {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  padding: 0 .02em;
+}
+
+.odometer .wheel { display: flex; flex-direction: column; transition: transform 1.6s cubic-bezier(.2, .8, .2, 1); }
+.odometer .wheel span { height: 1em; }
+.odometer .comma { color: var(--gold); width: .3em; }
+
+.counter-sub { font-size: 1.6rem; color: var(--frost); }
+.counter-sub b { color: var(--gold); }
+
+.counter-equivs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2vw;
+  margin: 2vh 4vw 0;
+}
+
+.equiv {
+  text-align: center;
+  padding: .7em 1em;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .06);
+  border: 1.5px solid rgba(255, 255, 255, .1);
+}
+
+.equiv-num { font-size: 3rem; font-weight: 900; color: var(--gold); line-height: 1.1; }
+.equiv-label { font-size: 1.15rem; font-weight: 700; color: var(--frost); }
+.equiv-label small { font-weight: 600; color: var(--muted); }
+
+.counter-chart { flex: 1; min-height: 0; overflow: hidden; margin: 2.4vh 4vw 1vh; }
+.counter-chart-title { font-size: 1.35rem; font-weight: 800; margin: 0 0 .6em; color: var(--frost); }
+
+.bars { display: flex; flex-direction: column; gap: .45em; }
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 16rem 1fr 6rem;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: 1.2rem;
+}
+
+.bar-name { text-align: right; font-weight: 700; color: var(--frost); }
+
+.bar-track { height: min(24px, 2.2vh); position: relative; }
+
+/* Single series: one validated hue; 24px cap; square at the baseline, 4px round at the data end. */
+.bar-fill {
+  display: block;
+  height: 100%;
+  background: #2e9e68;
+  border-radius: 0 4px 4px 0;
+  transition: width 1.2s cubic-bezier(.2, .8, .2, 1);
+}
+
+.bar-value { font-weight: 800; color: var(--snow); font-variant-numeric: tabular-nums; }
+
+.bars-empty { font-family: var(--font-hand); font-size: 2rem; color: var(--muted); }
+
+.ticker { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ticker b { color: var(--gold); }

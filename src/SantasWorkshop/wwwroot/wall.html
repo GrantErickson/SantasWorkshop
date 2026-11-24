@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d33">
+  <title>Wish Wall</title>
+  <link rel="stylesheet" href="/css/workshop.css">
+  <link rel="stylesheet" href="/css/tv.css">
+</head>
+<body class="tv">
+  <canvas id="snow" aria-hidden="true"></canvas>
+
+  <main class="layer tv-main wall">
+    <header class="tv-head">
+      <h1 class="festive title-glow tv-title">Santa's <em>AI</em> Workshop</h1>
+      <div class="mini-counter">
+        <div class="mini-num" id="hours">0</div>
+        <div class="mini-label">hours a year <span data-region></span> could get back</div>
+      </div>
+    </header>
+
+    <section class="wall-body">
+      <div class="wall-list-wrap">
+        <h2 class="wall-list-title">I wish AI would…</h2>
+        <div class="wall-viewport" id="viewport">
+          <div class="wall-list" id="list"></div>
+        </div>
+      </div>
+      <div class="wall-feature">
+        <div class="wall-feature-label" id="featureLabel">Fresh from the workshop</div>
+        <div class="blueprint-card" id="featureCard"></div>
+        <div class="wall-feature-meta" id="featureMeta"></div>
+      </div>
+    </section>
+
+    <footer class="tv-foot">
+      <span class="brand" data-brand></span>
+      <span>We built this booth with AI in <b data-days></b></span>
+      <span class="tv-cta">Make your wish at the tablet ✨</span>
+    </footer>
+  </main>
+
+  <div id="celebrate" class="celebrate hidden" aria-live="polite">
+    <div class="celebrate-card">
+      <div class="celebrate-eyebrow festive">✨ A new wish! ✨</div>
+      <div class="celebrate-wish" id="celebrateWish"></div>
+      <div class="blueprint-card" id="celebrateCard"></div>
+      <div class="celebrate-meta" id="celebrateMeta"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/wall.js"></script>
+</body>
+</html>

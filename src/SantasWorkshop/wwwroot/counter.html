@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d33">
+  <title>Hours Counter</title>
+  <link rel="stylesheet" href="/css/workshop.css">
+  <link rel="stylesheet" href="/css/tv.css">
+</head>
+<body class="tv">
+  <canvas id="snow" aria-hidden="true"></canvas>
+
+  <main class="layer tv-main counter">
+    <header class="tv-head">
+      <h1 class="festive title-glow tv-title">Santa's <em>AI</em> Workshop</h1>
+      <span class="brand tv-head-brand" data-brand></span>
+    </header>
+
+    <section class="counter-hero">
+      <div class="counter-label">Hours <span data-region></span> could get back every year</div>
+      <div class="odometer" id="odometer" role="img" aria-label="0 hours"></div>
+      <div class="counter-sub">from <b id="wishCount">0</b> wishes made tonight</div>
+    </section>
+
+    <section class="counter-equivs">
+      <div class="equiv"><div class="equiv-num" id="eqPeople">0</div><div class="equiv-label">full-time people's worth of work</div></div>
+      <div class="equiv"><div class="equiv-num" id="eqWeeks">0</div><div class="equiv-label">40-hour work weeks</div></div>
+      <div class="equiv"><div class="equiv-num" id="eqCookies">0</div><div class="equiv-label">batches of cookies baked instead<br><small>(30 minutes each)</small></div></div>
+    </section>
+
+    <section class="counter-chart">
+      <h2 class="counter-chart-title">Hours back by kind of wish</h2>
+      <div class="bars" id="bars"></div>
+    </section>
+
+    <footer class="tv-foot">
+      <span class="ticker" id="ticker"></span>
+      <span>Built with AI in <b data-days></b></span>
+    </footer>
+  </main>
+
+  <script type="module" src="/js/counter.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0b1d33">
+  <title>Santa's AI Workshop</title>
+  <link rel="stylesheet" href="/css/workshop.css">
+  <link rel="stylesheet" href="/css/kiosk.css">
+</head>
+<body class="kiosk">
+  <canvas id="snow" aria-hidden="true"></canvas>
+
+  <main class="layer k-main">
+    <header class="k-top">
+      <span class="brand" data-brand></span>
+      <span class="k-built">Built with AI in <span data-days></span></span>
+    </header>
+
+    <!-- 1. Make a wish -->
+    <section id="ask" class="screen">
+      <h1 class="festive title-glow k-title">Santa's <em>AI</em> Workshop</h1>
+      <p class="k-lede">Tell Santa's AI Elf the one work task you wish would just… <b>disappear</b>.</p>
+
+      <form id="wishForm" class="wish-box" autocomplete="off">
+        <label for="wishText" class="wish-prefix">I wish AI would…</label>
+        <div class="wish-row">
+          <textarea id="wishText" maxlength="400" rows="2" placeholder="do our expense reports" enterkeyhint="send"></textarea>
+          <button type="button" id="micBtn" class="mic hidden" aria-label="Speak your wish" title="Speak your wish">
+            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 0 0-7 0v6A3.5 3.5 0 0 0 12 15Zm6-3.5a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.91V20H8.5a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2H13v-2.59a6 6 0 0 0 5-5.9Z"/></svg>
+          </button>
+        </div>
+        <div class="chips" id="chips" aria-label="Need an idea?"></div>
+        <button class="btn btn-primary k-send" id="sendBtn" type="submit">Send it to the elves ✨</button>
+        <p class="k-fine">Your wish appears on the wall without your name.</p>
+      </form>
+    </section>
+
+    <!-- 2. Elves at work -->
+    <section id="working" class="screen hidden" aria-live="polite">
+      <svg class="k-gears animate" viewBox="-100 -80 200 160" aria-hidden="true">
+        <g fill="rgba(255,255,255,.08)" stroke="#eaf3ff" stroke-width="3" stroke-linejoin="round">
+          <g transform="translate(-28,8)"><g class="bp-spin" id="gearBig"></g></g>
+          <g transform="translate(44,-30)"><g class="bp-spin-rev" id="gearSmall"></g></g>
+          <g transform="translate(52,40)"><g class="bp-spin-rev" id="gearTiny"></g></g>
+        </g>
+      </svg>
+      <h2 class="festive title-glow k-working-title">The elves are on it!</h2>
+      <p class="k-working-msg" id="workingMsg">Reading your wish… twice.</p>
+      <div class="k-progress"><div id="progressBar"></div></div>
+      <p class="k-wish-echo" id="wishEcho"></p>
+    </section>
+
+    <!-- 3. Wish granted -->
+    <section id="result" class="screen hidden">
+      <div class="r-head">
+        <div class="r-eyebrow" id="rEyebrow">Wish granted!</div>
+        <h2 class="r-wish" id="rWish"></h2>
+      </div>
+      <div class="r-grid">
+        <div class="blueprint-card" id="rBlueprint"></div>
+        <div class="practical r-practical" id="rPractical"></div>
+      </div>
+      <div class="r-foot">
+        <div class="take-home">
+          <img id="rQr" alt="QR code to take this blueprint home" width="120" height="120">
+          <div>
+            <b>Take it home!</b>
+            <span>Scan to get your blueprint plus a free, personalized AI starter plan by email.</span>
+          </div>
+        </div>
+        <div class="r-actions">
+          <button class="btn btn-primary" id="againBtn" type="button">Make another wish</button>
+          <span class="r-reset" id="resetMsg"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Naughty list -->
+    <section id="naughty" class="screen hidden">
+      <h2 class="festive title-glow k-title">Ho ho… <em>no!</em></h2>
+      <p class="k-lede">The elves only build machines for work wishes they can show on the big screen. Give it another go?</p>
+      <button class="btn btn-primary k-send" id="naughtyBtn" type="button">Try another wish</button>
+    </section>
+
+    <!-- 5. Something went wrong -->
+    <section id="oops" class="screen hidden">
+      <h2 class="festive title-glow k-title">Snowed in!</h2>
+      <p class="k-lede" id="oopsMsg">The elves hit a snag. Please try again.</p>
+      <button class="btn btn-primary k-send" id="oopsBtn" type="button">Back to the workshop</button>
+    </section>
+  </main>
+
+  <script type="module" src="/js/kiosk.js"></script>
+</body>
+</html>

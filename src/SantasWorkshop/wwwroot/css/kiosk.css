@@ -1,0 +1,206 @@
+/* Kiosk: the tablet guests type or talk into. Sized off the viewport so it fits tablets and touchscreens. */
+html { font-size: clamp(14px, 1.2vw + .2vh, 24px); }
+
+body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
+
+.k-main {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.6rem 1.2rem;
+}
+
+.k-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.k-top .brand { font-size: 1.15rem; }
+.k-built { font-weight: 700; }
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  animation: fade-in .45s ease both;
+}
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(10px); } }
+
+.k-title { font-size: 4.6rem; margin: 0 0 .25em; }
+
+.k-lede {
+  font-size: 1.45rem;
+  max-width: 34em;
+  margin: 0 0 1.4em;
+  color: var(--frost);
+  line-height: 1.35;
+}
+
+.k-lede b { color: var(--gold); }
+
+.wish-box { width: min(46rem, 100%); }
+
+.wish-prefix {
+  display: block;
+  text-align: left;
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin: 0 0 .3em .3em;
+}
+
+.wish-row { display: flex; gap: .7rem; align-items: stretch; }
+
+.wish-row textarea {
+  flex: 1;
+  resize: none;
+  border: 3px solid rgba(255, 255, 255, .25);
+  border-radius: 20px;
+  padding: .7em .9em;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ink);
+  background: var(--paper);
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
+.wish-row textarea:focus { border-color: var(--gold); }
+.wish-row textarea::placeholder { color: #a9b2c3; font-weight: 600; }
+
+.mic {
+  width: 4.6rem;
+  border: 0;
+  border-radius: 20px;
+  cursor: pointer;
+  color: var(--snow);
+  background: var(--pine);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
+.mic.listening { background: var(--berry); animation: pulse 1.1s ease-in-out infinite; }
+
+@keyframes pulse { 50% { box-shadow: 0 0 0 12px rgba(232, 56, 79, .25); } }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  margin: 1.1rem 0 1.4rem;
+}
+
+.chips .chip { font-size: .95rem; }
+
+.k-send { font-size: 1.5rem; padding: .75em 2.2em; }
+
+.k-fine { color: var(--muted); font-size: .9rem; margin-top: 1em; }
+
+/* Working */
+.k-gears { width: 15rem; height: auto; }
+.k-working-title { font-size: 3.6rem; margin: .4em 0 .2em; }
+.k-working-msg { font-size: 1.4rem; color: var(--frost); min-height: 1.5em; margin: 0 0 1em; }
+
+.k-progress {
+  width: min(28rem, 80%);
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+
+.k-progress div {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(-45deg, var(--berry-bright) 0 12px, var(--snow) 12px 24px);
+  background-size: 34px 34px;
+  animation: candy 1s linear infinite;
+  transition: width .4s ease;
+}
+
+@keyframes candy { to { background-position: 34px 0; } }
+
+.k-wish-echo { font-family: var(--font-hand); font-size: 1.3rem; color: var(--gold); margin-top: 1.4em; max-width: 36em; }
+
+/* Result */
+#result { justify-content: flex-start; align-items: stretch; text-align: left; padding-top: .4rem; }
+
+.r-head { margin-bottom: .7rem; }
+
+.r-eyebrow {
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-size: .9rem;
+}
+
+.r-wish { margin: .1em 0 0; font-size: 1.7rem; line-height: 1.2; font-weight: 800; }
+.r-wish .hand { font-family: var(--font-hand); color: var(--gold); font-weight: 400; }
+
+.r-grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  container-type: size; /* so the blueprint can measure the height it has to fit in */
+}
+
+/* The blueprint drawing is 960 × 600. It gets about 59% of the width, but never more than 1.6× the height available,
+   or on wide screens it spills over the wish above and the QR code below. Any width it gives up goes to the answer. */
+.r-grid .blueprint-card { flex: none; width: 59%; width: min(59%, 160cqh); }
+
+.r-practical { flex: 1; min-width: 0; font-size: .95rem; max-height: 100%; overflow: auto; }
+.r-practical h3 { font-size: 1.2rem; }
+
+.r-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .9rem;
+}
+
+.take-home {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, .08);
+  border: 1.5px solid rgba(255, 255, 255, .16);
+  border-radius: 18px;
+  padding: .55rem 1.2rem .55rem .55rem;
+  max-width: 34rem;
+}
+
+.take-home img { width: 6.2rem; height: 6.2rem; border-radius: 10px; background: white; flex: none; }
+.take-home b { display: block; font-size: 1.25rem; color: var(--gold); }
+.take-home span { color: var(--frost); font-size: 1rem; line-height: 1.35; }
+
+.r-actions { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+.r-actions .btn { font-size: 1.2rem; }
+.r-reset { color: var(--muted); font-size: .85rem; min-height: 1.2em; }
+
+@media (max-aspect-ratio: 5/4) {
+  body.kiosk { overflow: auto; }
+  .k-main { height: auto; min-height: 100dvh; }
+  .r-grid { flex-direction: column; align-items: stretch; container-type: normal; }
+  .r-grid .blueprint-card { width: auto; }
+  .r-practical { flex: none; max-height: none; }
+  .r-foot { flex-direction: column; align-items: stretch; }
+  .r-actions { align-items: center; }
+}

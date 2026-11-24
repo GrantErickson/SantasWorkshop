@@ -1,0 +1,64 @@
+/* The guest's phone view, opened from the QR code. */
+.c-main {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 16px 16px 40px;
+}
+
+.c-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; }
+.c-title { font-size: 1.7rem; }
+.c-top .brand { font-size: .95rem; }
+
+.c-loading, .c-missing { text-align: center; padding: 18vh 8px; color: var(--frost); font-size: 1.1rem; }
+.c-missing h1 { font-size: 2.2rem; }
+
+.c-eyebrow {
+  margin: 0;
+  font-weight: 900;
+  font-size: .8rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.c-wish { font-size: 1.45rem; line-height: 1.25; margin: .2em 0 .8em; }
+.c-wish .hand { font-family: var(--font-hand); font-weight: 400; color: var(--gold); }
+
+.c-practical { margin-top: 16px; font-size: 1rem; }
+
+.optin {
+  margin-top: 16px;
+  padding: 1.3em 1.3em 1.5em;
+  border-radius: var(--radius);
+  background: var(--night-2);
+  border: 1.5px solid rgba(244, 201, 93, .45);
+}
+
+.optin h2 { margin: 0 0 .3em; font-size: 1.35rem; color: var(--gold); }
+.optin p { margin: 0 0 1em; color: var(--frost); line-height: 1.45; }
+
+.optin form { display: grid; gap: 12px; }
+
+.optin label { display: grid; gap: 4px; font-weight: 700; font-size: .95rem; }
+.optin .opt { color: var(--muted); font-weight: 600; }
+
+.optin input:not([type="checkbox"]) {
+  width: 100%;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  padding: .75em .9em;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.optin input:focus { outline: none; border-color: var(--gold); }
+
+.optin .consent { grid-template-columns: auto 1fr; align-items: start; font-weight: 600; color: var(--frost); line-height: 1.4; }
+.optin .consent input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--berry); }
+
+.form-error { color: #ffb3bd; font-weight: 700; margin: 0; min-height: 1.2em; }
+
+.optin .btn { font-size: 1.1rem; padding: .85em; }
+
+.c-foot { margin-top: 28px; text-align: center; color: var(--muted); font-size: .9rem; line-height: 1.6; }

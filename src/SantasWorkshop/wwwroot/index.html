@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1d33">
+  <meta name="robots" content="noindex">
+  <title>Santa's AI Workshop</title>
+  <link rel="stylesheet" href="/css/workshop.css">
+  <style>
+    .hub { max-width: 60rem; margin: 0 auto; padding: 6vh 16px 40px; text-align: center; }
+    .hub h1 { font-size: clamp(2.6rem, 8vw, 5rem); margin: 0 0 .2em; }
+    .hub > p { color: var(--frost); font-size: 1.15rem; margin: 0 auto 2em; max-width: 38em; line-height: 1.5; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 14px; text-align: left; }
+    .tile { display: block; padding: 1.2em 1.3em; border-radius: var(--radius); background: rgba(255, 255, 255, .07);
+            border: 1.5px solid rgba(255, 255, 255, .14); color: var(--snow); text-decoration: none; transition: background .2s; }
+    .tile:hover { background: rgba(255, 255, 255, .13); }
+    .tile b { display: block; font-size: 1.2rem; color: var(--gold); margin-bottom: .3em; }
+    .tile span { color: var(--frost); line-height: 1.45; font-size: .95rem; }
+    .hub footer { margin-top: 3em; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <main class="layer hub">
+    <h1 class="festive title-glow">Santa's <em>AI</em> Workshop</h1>
+    <p>Guests tell Santa's AI Elf the work task they wish would disappear. They get a silly blueprint for an elf machine,
+      a real answer for how AI could do it, and an estimate of the hours they'd get back.</p>
+    <div class="tiles">
+      <a class="tile" href="/kiosk"><b>Kiosk</b><span>The tablet where guests make their wish.</span></a>
+      <a class="tile" href="/wall"><b>Wish wall</b><span>TV 1: everyone's wishes, scrolling live.</span></a>
+      <a class="tile" href="/counter"><b>Hours counter</b><span>TV 2: hours the region could get back.</span></a>
+      <a class="tile" href="/admin"><b>Control room</b><span>Staff: moderation, leads and follow-up emails.</span></a>
+    </div>
+    <footer>Built with AI by <span data-company></span> in <span data-days></span>.</footer>
+  </main>
+  <script type="module">
+    import { $, applyBranding, snow } from "/js/common.js";
+    snow($("#snow"), { count: 70 });
+    applyBranding();
+  </script>
+</body>
+</html>
