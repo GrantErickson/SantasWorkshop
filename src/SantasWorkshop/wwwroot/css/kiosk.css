@@ -114,6 +114,11 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 .k-gears { width: 15rem; height: auto; }
 .k-working-title { font-size: 3.6rem; margin: .4em 0 .2em; }
 .k-working-msg { font-size: 1.4rem; color: var(--frost); min-height: 1.5em; margin: 0 0 1em; }
+.k-working-msg.fresh { animation: msg-in .45s ease both; }
+
+@keyframes msg-in { from { opacity: 0; transform: translateY(6px); } }
+
+@media (prefers-reduced-motion: reduce) { .k-working-msg.fresh { animation: none; } }
 
 .k-progress {
   width: min(28rem, 80%);

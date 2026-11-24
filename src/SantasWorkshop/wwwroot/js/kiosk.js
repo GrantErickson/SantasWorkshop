@@ -13,15 +13,69 @@ const IDEAS = [
   "update the CRM", "write job descriptions", "answer the same customer questions", "track inventory",
 ];
 
-const WORKING_LINES = [
+// What the elves are up to while Claude works. Each wish opens with a random first line, then continues through a
+// shuffled deck of the workshop lines. Slow answers get the "still going" lines.
+const WORKING_OPENERS = [
   "Reading your wish… twice.",
-  "Sharpening candy-cane pencils…",
+  "Unrolling a fresh sheet of blueprint paper…",
+  "Sharpening the candy-cane pencils…",
+  "Waking up the night-shift elves…",
+  "Rolling up tiny sleeves…",
+  "Clearing a workbench for your wish…",
+  "Ringing the workshop bell. Everybody up!",
+  "Pinning your wish to the big corkboard…",
+];
+
+const WORKING_LINES = [
   "Consulting the North Pole engineering department…",
   "Drafting the blueprint…",
-  "Estimating the hours you'll get back…",
+  "Measuring twice, wrapping once…",
+  "Tightening the jingle bolts…",
+  "Oiling the gingerbread gears…",
+  "Untangling the fairy lights…",
+  "Calibrating the snow-globe brain…",
   "Asking Rudolph for a second opinion…",
+  "Borrowing a wrench from Mrs. Claus…",
+  "Hammering in the peppermint rivets…",
+  "Testing the conveyor belt with a fruitcake…",
+  "Looking for the left-handed candy-cane wrench…",
+  "Counting the sprockets. Then counting them again…",
+  "Tuning the jingle bells to the right key…",
+  "Wiring up the tinsel. Carefully…",
+  "Adding a few extra gears, just in case…",
+  "Teaching the robot arm to wave…",
+  "Topping up the cocoa tank…",
+  "Polishing the brass pipes…",
+  "Checking the elves' break schedule…",
+  "Asking the snowmen to keep things cool…",
+  "Sweeping up the glitter…",
+  "Running it past the head elf…",
+  "Borrowing power from the toy train set…",
+  "Asking the penguins for directions. Wrong pole…",
+  "Shooing the reindeer off the blueprints…",
+  "Swapping the squeaky wheel for a jingly one…",
+  "Bolting on a bigger funnel…",
+  "Finding the dull parts of your week to automate…",
+  "Converting busywork into holiday cheer…",
+  "Estimating the hours you'll get back…",
+  "Doing the math on your new free time…",
+  "Looking up how AI could really do this…",
+  "Picking a first step you could try on Monday…",
+  "Writing it all down in our neatest handwriting…",
   "Checking it twice…",
+  "Adding a bow on top…",
 ];
+
+const WORKING_SLOW = [
+  "Still going! The best machines take a little longer…",
+  "The elves have called in reinforcements…",
+  "Almost there. One last tinsel adjustment…",
+  "Santa wants to see this one personally…",
+  "Just tightening the very last bolt…",
+];
+
+const WORKING_LINE_SECONDS = 2.6;
+const WORKING_SLOW_AFTER_SECONDS = 18;
 
 let config;
 let kioskKey = "";
@@ -131,15 +185,40 @@ async function makeWish() {
   }
 }
 
+function shuffle(list) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+// Shared across wishes, so the next guest picks up where the last one left off and no line repeats until all have shown.
+let workingQueue = [];
+let slowQueue = [];
+
 function animateWorking() {
-  let i = 0;
   const start = performance.now();
-  $("#workingMsg").textContent = WORKING_LINES[0];
+  const message = $("#workingMsg");
+  const say = (text) => {
+    message.textContent = text;
+    message.classList.remove("fresh");
+    void message.offsetWidth; // restart the fade-in
+    message.classList.add("fresh");
+  };
+  say(WORKING_OPENERS[Math.floor(Math.random() * WORKING_OPENERS.length)]);
   $("#progressBar").style.width = "4%";
   const lines = setInterval(() => {
-    i = (i + 1) % WORKING_LINES.length;
-    $("#workingMsg").textContent = WORKING_LINES[i];
-  }, 2300);
+    const waited = (performance.now() - start) / 1000;
+    if (waited > WORKING_SLOW_AFTER_SECONDS) {
+      if (slowQueue.length === 0) slowQueue = shuffle(WORKING_SLOW);
+      say(slowQueue.shift());
+    } else {
+      if (workingQueue.length === 0) workingQueue = shuffle(WORKING_LINES);
+      say(workingQueue.shift());
+    }
+  }, WORKING_LINE_SECONDS * 1000);
   // Fills quickly at first and slows down; never quite reaches the end on its own.
   const bar = setInterval(() => {
     const t = (performance.now() - start) / 1000;
