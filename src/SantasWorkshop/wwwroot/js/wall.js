@@ -1,6 +1,6 @@
 import { $, api, applyBranding, countTo, esc, fmt, listen, snow } from "./common.js";
 import { renderBlueprint } from "./blueprint.js";
-import { setUpSound, sfx, startMachine, startMusic } from "./sound.js";
+import { setUpSound, sfx, showNowPlaying, startMachine, startMusic } from "./sound.js";
 import { makeFlip } from "./picture.js";
 
 const FEATURE_SECONDS = 12;     // how long each blueprint stays in the featured spot (it turns over to its picture halfway)
@@ -40,6 +40,7 @@ init();
 async function init() {
   snow($("#snow"), { count: 110 });
   setUpSound({ page: "wall", musicButton: true });
+  showNowPlaying($("#nowPlaying"));
   startMusic();
   featureFlip = makeFlip($("#featureFlip"));
   celebrateFlip = makeFlip($("#celebrateFlip"));

@@ -1,6 +1,6 @@
 import { $, $$, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
 import { gear, renderBlueprint } from "./blueprint.js";
-import { setUpSound, sfx, startMachine, startMusic, stopMusic } from "./sound.js";
+import { setUpSound, sfx, showNowPlaying, startMachine, startMusic, stopMusic } from "./sound.js";
 import { makeFlip, waitForPicture } from "./picture.js";
 
 const RESULT_IDLE_SECONDS = 120; // reset to the start screen after this long without a touch
@@ -105,6 +105,7 @@ async function init() {
   }
 
   setUpSound({ page: "kiosk", mount: $("#soundSlot") });
+  showNowPlaying($("#nowPlaying"));
   resultFlip = makeFlip($("#rFlip"), { interactive: true });
   config = await applyBranding();
   setUpVoice();
@@ -153,7 +154,7 @@ async function makeWish() {
   $("#wishEcho").textContent = `“I wish AI would ${text}”`;
   show("working");
   sfx("send");
-  startMusic({ playlist: ["jingle"], tempo: 1.1 });
+  startMusic({ upbeat: true, lively: true }); // a few seconds of a random upbeat carol while the elves work
   const stopWorking = animateWorking();
 
   try {

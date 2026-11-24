@@ -1,5 +1,5 @@
-// Festive sound for the booth, synthesized live with the Web Audio API, so there are no audio files to license.
-// The music is arranged from three public-domain carols: Jingle Bells, We Wish You a Merry Christmas and Deck the Halls.
+// Festive sound for the booth. The sound effects are synthesized live with the Web Audio API; the music is recorded
+// carols from /audio (see /audio/CREDITS.txt for where each one comes from and its license).
 //
 // Browsers only allow sound after someone taps, clicks or presses a key on the page. Until then everything here
 // is silent; the kiosk unlocks on the first guest's tap, and the TVs show a "Click for sound" button for staff.
@@ -14,7 +14,7 @@ let master, sfxBus, musicBus, noiseBuf;
 let prefs = { sound: true, music: true };
 let prefKey = "sw-sound";
 let musicWanted = false;
-let musicOpts = {};
+let musicOpts = { playlist: [] };
 let music = null;
 const listeners = new Set();
 
@@ -76,6 +76,8 @@ export function setUpSound({ page, mount = null, musicButton = false }) {
 
 function ensure() {
   if (ctx || !AudioCtx) return ctx;
+  // Safari 16.4+: play like a media app, so an iPad's silent switch doesn't mute the booth.
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch { /* not supported */ }
   ctx = new AudioCtx();
   const limiter = ctx.createDynamicsCompressor(); // keeps stacked sounds from clipping
   master = ctx.createGain();
@@ -345,92 +347,47 @@ export function startMachine(kinds, svg, { delay = 0.5, gap = 0.45 } = {}) {
 }
 
 // ---- Music ----------------------------------------------------------------------------------
+// Recorded carols in /audio (sources and licenses in /audio/CREDITS.txt). They stream through the music bus, so the
+// sound and music toggles and the ducking under sound effects still apply.
 
-// Melodies as "note:beats" (R = rest), and one chord per bar for the bass and the off-beat chords.
-const SONGS = {
-  jingle: {
-    bpm: 176, beatsPerBar: 4, pickup: 0,
-    melody: `E4:1 E4:1 E4:2  E4:1 E4:1 E4:2  E4:1 G4:1 C4:1.5 D4:.5  E4:4
-             F4:1 F4:1 F4:1.5 F4:.5  F4:1 E4:1 E4:1 E4:.5 E4:.5  E4:1 D4:1 D4:1 E4:1  D4:2 G4:2
-             E4:1 E4:1 E4:2  E4:1 E4:1 E4:2  E4:1 G4:1 C4:1.5 D4:.5  E4:4
-             F4:1 F4:1 F4:1.5 F4:.5  F4:1 E4:1 E4:1 E4:.5 E4:.5  G4:1 G4:1 F4:1 D4:1  C4:4`,
-    chords: "C C C C F C D G C C C C F C G C",
-  },
-  wish: {
-    bpm: 150, beatsPerBar: 3, pickup: 1,
-    melody: `D4:1  G4:1 G4:.5 A4:.5 G4:.5 F#4:.5  E4:1 E4:1 E4:1  A4:1 A4:.5 B4:.5 A4:.5 G4:.5  F#4:1 D4:1 D4:1
-             B4:1 B4:.5 C5:.5 B4:.5 A4:.5  G4:1 E4:1 D4:.5 D4:.5  E4:1 A4:1 F#4:1  G4:2 R:1`,
-    chords: "G C A D B Em C G",
-  },
-  deck: {
-    bpm: 132, beatsPerBar: 4, pickup: 0,
-    melody: `G4:1.5 F4:.5 E4:1 D4:1  C4:1 D4:1 E4:1 C4:1  D4:.5 E4:.5 F4:.5 D4:.5 E4:1.5 D4:.5  C4:1 B3:1 C4:2
-             G4:1.5 F4:.5 E4:1 D4:1  C4:1 D4:1 E4:1 C4:1  D4:.5 E4:.5 F4:.5 D4:.5 E4:1.5 D4:.5  C4:1 B3:1 C4:2
-             D4:1.5 E4:.5 F4:1 D4:1  E4:1.5 F4:.5 G4:1 D4:1  E4:.5 F#4:.5 G4:1 A4:.5 B4:.5 C5:1  B4:1 A4:1 G4:2
-             G4:1.5 F4:.5 E4:1 D4:1  C4:1 D4:1 E4:1 C4:1  A4:.5 A4:.5 A4:.5 A4:.5 G4:1.5 F4:.5  E4:1 D4:1 C4:2`,
-    chords: "C C G C C C G C G C D G C C F C",
-  },
+// All files are evened out to the same loudness (-16 LUFS). lively = seconds in where a quick listen should start.
+const MACLEOD = { by: "Kevin MacLeod (incompetech.com)", license: "CC BY 4.0" };
+const TRACKS = {
+  "jingle-bells": { title: "Jingle Bells", ...MACLEOD, upbeat: true },
+  "we-wish-you": { title: "We Wish You a Merry Christmas", ...MACLEOD, upbeat: true, lively: 34.5 },
+  "deck-the-halls": { title: "Deck the Halls", ...MACLEOD, upbeat: true },
+  "up-on-a-housetop": { title: "Up on a Housetop", ...MACLEOD, upbeat: true },
+  "joy-to-the-world": { title: "Joy to the World", by: "United States Marine Band", upbeat: true },
 };
 
-const SEMITONE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+const ALL_TRACKS = Object.keys(TRACKS);
+const nowPlaying = new Set();
 
-function midi(name) {
-  const m = /^([A-G])(#|b)?(-?\d)$/.exec(name);
-  return 12 * (Number(m[3]) + 1) + SEMITONE[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
+/** Calls fn with the track now playing ({ title, by, license }), or null when the music stops. */
+export function onNowPlaying(fn) {
+  nowPlaying.add(fn);
 }
 
-const hz = (n) => 440 * 2 ** ((n - 69) / 12);
-
-function buildSong(song, tempo) {
-  const spb = 60 / (song.bpm * tempo);
-  const events = [];
-  let beat = 0;
-  for (const token of song.melody.trim().split(/\s+/)) {
-    const [note, beats] = token.split(":");
-    if (note !== "R") events.push({ at: beat * spb, play: "melody", freq: hz(midi(note) + 12), dur: Number(beats) * spb });
-    beat += Number(beats);
-  }
-  song.chords.split(" ").forEach((chord, bar) => {
-    const start = (song.pickup + bar * song.beatsPerBar) * spb;
-    const root = SEMITONE[chord[0]];
-    const triad = chord.endsWith("m") ? [0, 3, 7] : [0, 4, 7];
-    events.push({ at: start, play: "bass", freq: hz(36 + root), dur: spb * 1.6 });
-    if (song.beatsPerBar === 4) events.push({ at: start + 2 * spb, play: "bass", freq: hz(43 + root), dur: spb * 1.6 });
-    const offBeats = song.beatsPerBar === 4 ? [1, 3] : [1, 2];
-    for (const b of offBeats) {
-      for (const step of triad) events.push({ at: start + b * spb, play: "chord", freq: hz(60 + root + step), dur: spb * 0.5 });
-    }
+/** Keeps an element showing the track now playing, with its credit (which the CC BY tracks require). */
+export function showNowPlaying(el) {
+  onNowPlaying((t) => {
+    el.textContent = t ? `♪ ${t.title} · ${t.by}${t.license ? ` · ${t.license}` : ""}` : "";
   });
-  for (let b = 0; b < beat; b += 0.5) events.push({ at: b * spb, play: "bells", accent: b % 1 === 0 });
-  events.sort((a, b) => a.at - b.at);
-  return { events, length: beat * spb };
 }
 
-function playEvent(ev, t, out) {
-  switch (ev.play) {
-    case "melody": { // music box
-      const ring = Math.min(1.6, Math.max(0.5, ev.dur * 1.8));
-      tone("sine", ev.freq, t, ring, 0.24, { attack: 0.004, out });
-      tone("sine", ev.freq * 2, t, ring * 0.45, 0.07, { attack: 0.003, out });
-      tone("triangle", ev.freq * 4, t, 0.1, 0.02, { attack: 0.002, out });
-      break;
-    }
-    case "bass":
-      tone("triangle", ev.freq, t, ev.dur, 0.26, { attack: 0.01, out });
-      break;
-    case "chord":
-      tone("triangle", ev.freq, t, ev.dur, 0.035, { attack: 0.006, out });
-      break;
-    case "bells":
-      noise(t, 0.06, ev.accent ? 0.07 : 0.035, { type: "bandpass", freq: 7500, q: 1.8, out });
-      break;
-  }
+function announce(track) {
+  for (const fn of nowPlaying) fn(track);
 }
 
-/** Plays music for as long as the page wants it (and the music setting is on). */
-export function startMusic({ playlist = ["jingle", "wish", "deck"], tempo = 1 } = {}) {
+/**
+ * Plays music for as long as the page wants it (and the music setting is on).
+ * @param playlist  track ids; played in a fresh random order each time round when shuffle is on
+ * @param lively    start the first track at its liveliest point (the kiosk only plays a few seconds while the elves work)
+ * @param upbeat    only the upbeat tracks
+ */
+export function startMusic({ playlist = ALL_TRACKS, shuffle = true, lively = false, upbeat = false } = {}) {
   musicWanted = true;
-  musicOpts = { playlist, tempo };
+  musicOpts = { playlist: upbeat ? playlist.filter((id) => TRACKS[id].upbeat) : playlist, shuffle, lively };
   ensure();
   syncMusic();
 }
@@ -441,7 +398,7 @@ export function stopMusic(fade = 0.8) {
 }
 
 function syncMusic(fade = 0.8) {
-  const want = musicWanted && prefs.music && prefs.sound && running();
+  const want = musicWanted && prefs.music && prefs.sound && running() && musicOpts.playlist.length > 0;
   if (want && !music) beginMusic();
   else if (!want && music) endMusic(fade);
 }
@@ -451,39 +408,70 @@ function beginMusic() {
   out.gain.setValueAtTime(0.0001, ctx.currentTime);
   out.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 1.2);
   out.connect(musicBus);
-  const { playlist, tempo } = musicOpts;
-  const first = buildSong(SONGS[playlist[0]], tempo);
-  music = { out, playlist, tempo, index: 0, song: first, next: 0, start: ctx.currentTime + 0.15 };
-  music.timer = setInterval(pump, 100);
-  pump();
+  music = { out, queue: [], player: null, misses: 0, last: null, gap: 0 };
+  playNext(music, musicOpts.lively);
 }
 
-function pump() {
-  if (!music) return;
-  const horizon = ctx.currentTime + 0.6;
-  for (;;) {
-    if (music.next >= music.song.events.length) {
-      // One bar of breathing room, then the next carol.
-      music.start += music.song.length + 60 / (SONGS[music.playlist[music.index]].bpm * music.tempo) * 2;
-      music.index = (music.index + 1) % music.playlist.length;
-      music.song = buildSong(SONGS[music.playlist[music.index]], music.tempo);
-      music.next = 0;
-    }
-    const ev = music.song.events[music.next];
-    const t = music.start + ev.at;
-    if (t > horizon) break;
-    if (t >= ctx.currentTime - 0.02) playEvent(ev, t, music.out);
-    music.next++;
+function playNext(m, lively = false) {
+  if (music !== m) return;
+  if (m.queue.length === 0) m.queue = musicOpts.shuffle ? shuffled(musicOpts.playlist, m.last) : [...musicOpts.playlist];
+  const id = m.queue.shift();
+  const track = TRACKS[id];
+  m.last = id;
+
+  const el = new Audio();
+  el.preload = "auto";
+  // A media fragment (#t=) starts playback part-way in.
+  const src = `/audio/${id}.mp3`;
+  el.src = lively && track.lively ? `${src}#t=${track.lively}` : src;
+  const node = ctx.createMediaElementSource(el);
+  node.connect(m.out);
+  const player = { el, node };
+  m.player = player;
+
+  const done = (failed) => {
+    if (m.player !== player) return;
+    release(player);
+    m.player = null;
+    announce(null);
+    m.misses = failed ? m.misses + 1 : 0;
+    if (m.misses >= musicOpts.playlist.length) return; // nothing will load; stay quiet rather than spin
+    m.gap = setTimeout(() => playNext(m), failed ? 0 : 1500); // a breath between carols
+  };
+  el.addEventListener("ended", () => done(false));
+  el.addEventListener("error", () => done(true));
+  el.play().then(() => { if (m.player === player) announce(track); }, () => done(true));
+}
+
+function release({ el, node }) {
+  el.pause();
+  el.removeAttribute("src");
+  el.load(); // lets the browser drop the download
+  node.disconnect();
+}
+
+/** A random order that doesn't start with the track that just finished. */
+function shuffled(ids, avoidFirst) {
+  const list = [...ids];
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
   }
+  if (list.length > 1 && list[0] === avoidFirst) [list[0], list[1]] = [list[1], list[0]];
+  return list;
 }
 
 function endMusic(fade) {
-  const { out, timer } = music;
+  const m = music;
   music = null;
-  clearInterval(timer);
+  clearTimeout(m.gap);
+  announce(null);
   const now = ctx.currentTime;
-  out.gain.cancelScheduledValues(now);
-  out.gain.setValueAtTime(Math.max(out.gain.value, 0.0001), now);
-  out.gain.exponentialRampToValueAtTime(0.0001, now + fade);
-  setTimeout(() => out.disconnect(), fade * 1000 + 300);
+  m.out.gain.cancelScheduledValues(now);
+  m.out.gain.setValueAtTime(Math.max(m.out.gain.value, 0.0001), now);
+  m.out.gain.exponentialRampToValueAtTime(0.0001, now + fade);
+  setTimeout(() => {
+    if (m.player) release(m.player);
+    m.out.disconnect();
+  }, fade * 1000 + 300);
 }

@@ -142,7 +142,8 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
 3. Open `/wall` and `/counter` full screen (F11) on the TVs, then **click once on each one** to turn on sound.
    Browsers won't play audio until someone clicks, so each TV shows a "Click anywhere for sound" button until you do.
    On the TVs, **S** toggles all sound and **M** toggles the wall's music. The kiosk has a speaker button in its top
-   corner, and its sound starts with the first guest's tap. On an iPad, check the silent switch is off.
+   corner, and its sound starts with the first guest's tap. If a screen stays silent, check Chrome hasn't muted the
+   site (right-click the tab → *Unmute site*). On an older iPad (before iPadOS 16.4), check the silent switch is off.
 4. Make one wish, scan its QR code with your own phone, and submit the opt-in form to test the whole loop.
    Then hide that test wish in admin so it isn't on the wall.
 5. Keep `/admin` open on a phone. Use **Hide** if anything unfortunate makes it onto the wall, or **Remove** in the
@@ -181,10 +182,16 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
   (33 of them), on one of several machine shapes with its own motion and pipe fittings, seeded from the wish so it
   always draws the same way. That keeps every card on-brand and instant. To add a part, add it to `Catalog.Modules`,
   `PARTS` in blueprint.js, and `PART_SOUND` in `wwwroot/js/sound.js`.
-- **The music and sound effects are synthesized in the browser** (`wwwroot/js/sound.js`), so there are no audio files.
-  The music is arranged from public-domain carols. The wall plays music and a fanfare for each new wish, the kiosk
-  plays effects and a jingle while the elves work, and the counter ticks and cha-chings as the hours go up. When a
-  blueprint appears, each part lights up and makes its own noise, left to right.
+- **The sound effects are synthesized in the browser** (`wwwroot/js/sound.js`). The wall plays a fanfare for each new
+  wish, the kiosk chimes as guests tap, and the counter ticks and cha-chings as the hours go up. When a blueprint
+  appears, each part lights up and makes its own noise, left to right.
+- **The music is recorded carols** in `wwwroot/audio/`: Kevin MacLeod's (CC BY 4.0) and US military bands'
+  (public domain). The wall shuffles through all of them; the kiosk plays a random upbeat one, from its liveliest
+  point, while the elves work. The screens credit each track while it plays, which CC BY requires; sources and
+  licenses are in `wwwroot/audio/CREDITS.txt`. The files are trimmed and evened out to the same loudness. To add a
+  track, process it the same way (two-pass ffmpeg `loudnorm` to -16 LUFS, 112 kbps MP3), add it to `TRACKS` in
+  sound.js, and credit it in CREDITS.txt. Only use recordings that are public domain or CC BY, of public-domain
+  carols.
 - **One call per lead**, in the background, writes the personalized starter plan.
 - **The machine pictures come from a Microsoft MAI image model, not Claude** (see below).
 - **Server-side refusal fallback** (`server-side-fallback-2026-07-01` beta) is on: if a safety classifier declines

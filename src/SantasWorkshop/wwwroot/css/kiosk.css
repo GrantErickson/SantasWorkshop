@@ -140,6 +140,8 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 
 @keyframes candy { to { background-position: 34px 0; } }
 
+.k-now-playing { margin-top: 2.2em; }
+
 .k-wish-echo { font-family: var(--font-hand); font-size: 1.3rem; color: var(--gold); margin-top: 1.4em; max-width: 36em; }
 
 /* Result */

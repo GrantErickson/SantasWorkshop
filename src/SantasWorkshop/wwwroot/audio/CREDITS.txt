@@ -1,0 +1,23 @@
+Music credits for Santa's AI Workshop
+=====================================
+
+Every file here has been changed from the original: silence trimmed from the start and end, loudness evened out
+(EBU R128, -16 LUFS) and re-encoded as 112 kbps MP3. The screens show each track's credit while it plays.
+
+
+Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
+
+  jingle-bells.mp3       "Jingle Bells"                   https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100889
+  we-wish-you.mp3        "We Wish You a Merry Christmas"  https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100369
+  deck-the-halls.mp3     "Deck the Halls" (Deck the Halls B)  https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100368
+  up-on-a-housetop.mp3   "Up on a Housetop"               https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100365
+
+
+Public domain (work of the United States government, 17 U.S.C. 105)
+
+  joy-to-the-world.mp3   "Joy to the World", United States Marine Band ("The President's Own"), 1985
+                         Originally published at marineband.marines.mil (web exclusive, December 2013)
+
+Use of these recordings doesn't imply endorsement by the U.S. Marine Corps or the U.S. Air Force.
