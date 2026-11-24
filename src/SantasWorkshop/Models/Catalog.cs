@@ -42,6 +42,23 @@ public static class Catalog
         ("gift-wrapper", "wraps and delivers the finished result"),
         ("chimney", "vents the busywork away"),
         ("rocket", "booster for extra speed"),
+        ("shredder", "shreds the paperwork nobody needs"),
+        ("mailbox", "sends the emails and letters"),
+        ("calculator", "crunches the numbers"),
+        ("clock", "keeps schedules and deadlines"),
+        ("crystal-ball", "forecasts what's coming next"),
+        ("lightbulb", "comes up with bright ideas"),
+        ("elf-wheel", "hamster wheel an elf runs in to power the machine"),
+        ("catapult", "flings finished work out the door"),
+        ("crane", "claw that picks exactly the right item"),
+        ("vacuum", "hoovers up scattered data"),
+        ("filing-cabinet", "files everything where it belongs"),
+        ("tesla-coil", "candy-cane coil that zaps tasks with power"),
+        ("telescope", "searches far and wide"),
+        ("chatbot", "speech bubbles that answer questions"),
+        ("helper-bot", "friendly robot elf that handles routine requests"),
+        ("spreadsheet", "grid that fills in every cell"),
+        ("vault", "keeps secrets and records safe"),
     ];
 
     public static readonly HashSet<string> ModuleKinds =

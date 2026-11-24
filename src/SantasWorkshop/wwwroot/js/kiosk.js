@@ -1,5 +1,6 @@
 import { $, $$, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
 import { gear, renderBlueprint } from "./blueprint.js";
+import { setUpSound, sfx, startMachine, startMusic, stopMusic } from "./sound.js";
 
 const RESULT_IDLE_SECONDS = 120; // reset to the start screen after this long without a touch
 const ASK_IDLE_SECONDS = 75;     // clear a half-typed wish someone walked away from
@@ -46,6 +47,7 @@ async function init() {
     try { kioskKey = localStorage.getItem("kioskKey") || ""; } catch { /* private mode */ }
   }
 
+  setUpSound({ page: "kiosk", mount: $("#soundSlot") });
   config = await applyBranding();
   setUpVoice();
   showAsk();
@@ -54,9 +56,9 @@ async function init() {
   $("#wishText").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); makeWish(); }
   });
-  $("#againBtn").addEventListener("click", showAsk);
-  $("#naughtyBtn").addEventListener("click", showAsk);
-  $("#oopsBtn").addEventListener("click", showAsk);
+  for (const id of ["#againBtn", "#naughtyBtn", "#oopsBtn"]) {
+    $(id).addEventListener("click", () => { sfx("tap"); showAsk(); });
+  }
   addEventListener("pointerdown", bumpIdle, { passive: true });
   addEventListener("keydown", bumpIdle, { passive: true });
 }
@@ -73,7 +75,7 @@ function showAsk() {
   const picks = [...IDEAS].sort(() => Math.random() - 0.5).slice(0, 6);
   $("#chips").innerHTML = picks.map((i) => `<button type="button" class="chip">${esc(i)}</button>`).join("");
   for (const chip of $$("#chips .chip")) {
-    chip.addEventListener("click", () => { $("#wishText").value = chip.textContent; $("#wishText").focus(); });
+    chip.addEventListener("click", () => { sfx("tap"); $("#wishText").value = chip.textContent; $("#wishText").focus(); });
   }
   setIdle(ASK_IDLE_SECONDS, showAsk);
 }
@@ -83,6 +85,7 @@ async function makeWish() {
   if (text.length < 3) {
     $("#wishText").focus();
     $("#wishText").placeholder = "Type a work task here first!";
+    sfx("oops");
     return;
   }
   stopListening();
@@ -90,6 +93,8 @@ async function makeWish() {
   $("#sendBtn").disabled = true;
   $("#wishEcho").textContent = `“I wish AI would ${text}”`;
   show("working");
+  sfx("send");
+  startMusic({ playlist: ["jingle"], tempo: 1.1 });
   const stopWorking = animateWorking();
 
   try {
@@ -99,20 +104,24 @@ async function makeWish() {
       headers: kioskKey ? { "X-Kiosk-Key": kioskKey } : {},
     });
     stopWorking();
+    stopMusic(0.4);
     if (!res.wish.appropriate) {
       show("naughty");
+      sfx("naughty");
       setIdle(30, showAsk);
       return;
     }
     showResult(res.wish);
   } catch (err) {
     stopWorking();
+    stopMusic(0.4);
     $("#oopsMsg").textContent = err.status === 401
       ? "This kiosk isn't unlocked yet. Ask a staff member to open it with the kiosk link."
       : err.status === 429
         ? "The elves need a quick cocoa break. Try again in a minute!"
         : "The elves hit a snag. Please try again.";
     show("oops");
+    sfx("oops");
     setIdle(30, showAsk);
   }
 }
@@ -145,6 +154,8 @@ function showResult(wish) {
   $("#rPractical").innerHTML = practicalHtml(wish);
   $("#rQr").src = `/qr/${encodeURIComponent(wish.id)}.svg`;
   show("result");
+  sfx("fanfare");
+  startMachine((wish.blueprint?.modules ?? []).map((m) => m.kind), $("#rBlueprint svg"), { delay: 1 });
   setIdle(RESULT_IDLE_SECONDS, showAsk, true);
 }
 
@@ -195,6 +206,7 @@ function startListening(Recognition) {
   recognition.onend = stopListening;
   recognition.onerror = stopListening;
   recognition.start();
+  sfx("micOn");
   $("#micBtn").classList.add("listening");
 }
 
@@ -203,6 +215,7 @@ function stopListening() {
     const r = recognition;
     recognition = null;
     try { r.stop(); } catch { /* already stopped */ }
+    sfx("micOff");
   }
   $("#micBtn").classList.remove("listening");
 }

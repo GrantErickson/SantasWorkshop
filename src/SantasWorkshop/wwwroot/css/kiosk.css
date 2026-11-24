@@ -20,6 +20,7 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 
 .k-top .brand { font-size: 1.15rem; }
 .k-built { font-weight: 700; }
+.k-top-right { display: flex; align-items: center; gap: .8rem; }
 
 .screen {
   flex: 1;

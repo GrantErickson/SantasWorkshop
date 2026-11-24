@@ -127,7 +127,10 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
    If it's much over 20 seconds, set `Workshop__UseFastMode=true` (faster, about twice the price per token).
 2. Scan the kiosk QR code in the Screens panel with the tablet. It opens the kiosk already unlocked.
    On an iPad, *Share → Add to Home Screen* gives a full-screen kiosk. Turn on Guided Access to lock it in.
-3. Open `/wall` and `/counter` full screen (F11) on the TVs.
+3. Open `/wall` and `/counter` full screen (F11) on the TVs, then **click once on each one** to turn on sound.
+   Browsers won't play audio until someone clicks, so each TV shows a "Click anywhere for sound" button until you do.
+   On the TVs, **S** toggles all sound and **M** toggles the wall's music. The kiosk has a speaker button in its top
+   corner, and its sound starts with the first guest's tap. On an iPad, check the silent switch is off.
 4. Make one wish, scan its QR code with your own phone, and submit the opt-in form to test the whole loop.
    Then hide that test wish in admin so it isn't on the wall.
 5. Keep `/admin` open on a phone. Use **Hide** if anything unfortunate makes it onto the wall.
@@ -157,8 +160,14 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
   (structured outputs). Claude returns the blueprint (a name, a tagline, 4–5 machine parts from a fixed catalog, and a
   warning label), the practical answer, an hours estimate with its assumptions, a category, an anonymized line for the
   wall, and an `appropriate` flag. Unsuitable wishes get a friendly "Ho ho… no!" on the kiosk and never reach the wall.
-- **The blueprint drawing is code, not image generation.** `wwwroot/js/blueprint.js` draws each part Claude picks.
-  That keeps every card on-brand and instant. To add a part, add it to `Catalog.Modules` and `PARTS` in blueprint.js.
+- **The blueprint drawing is code, not image generation.** `wwwroot/js/blueprint.js` draws each part Claude picks
+  (33 of them), on one of several machine shapes with its own motion and pipe fittings, seeded from the wish so it
+  always draws the same way. That keeps every card on-brand and instant. To add a part, add it to `Catalog.Modules`,
+  `PARTS` in blueprint.js, and `PART_SOUND` in `wwwroot/js/sound.js`.
+- **The music and sound effects are synthesized in the browser** (`wwwroot/js/sound.js`), so there are no audio files.
+  The music is arranged from public-domain carols. The wall plays music and a fanfare for each new wish, the kiosk
+  plays effects and a jingle while the elves work, and the counter ticks and cha-chings as the hours go up. When a
+  blueprint appears, each part lights up and makes its own noise, left to right.
 - **One call per lead**, in the background, writes the personalized starter plan.
 - **Server-side refusal fallback** (`server-side-fallback-2026-07-01` beta) is on: if a safety classifier declines
   a request, the API retries it on a fallback model inside the same call. Anything else that fails drops to the backup elf.

@@ -1,19 +1,23 @@
 import { $, api, applyBranding, countTo, esc, fmt, listen, snow } from "./common.js";
+import { setUpSound, sfx } from "./sound.js";
 
 const MAX_BARS = 5; // plus an "Everything else" row, so it always fits a 16:9 screen
 
 let latest = [];
+let shownHours = 0;
 
 init();
 
 async function init() {
   snow($("#snow"), { count: 110 });
+  setUpSound({ page: "counter" });
   await applyBranding();
   await refresh();
   listen(
     {
       wish: ({ item, stats }) => {
         latest = [item, ...latest].slice(0, 8);
+        if (stats.totalHours > shownHours) sfx("odometer");
         render(stats);
       },
       refresh: () => refresh(),
@@ -32,6 +36,7 @@ async function refresh() {
 }
 
 function render(stats) {
+  shownHours = stats.totalHours;
   setOdometer(stats.totalHours);
   countTo($("#wishCount"), stats.wishCount, { duration: 800 });
   $("#eqPeople").textContent = (stats.totalHours / 2080).toFixed(1);

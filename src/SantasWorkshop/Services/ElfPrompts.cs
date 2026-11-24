@@ -33,6 +33,8 @@ public static class ElfPrompts
         - blueprint.tagline: one playful line, at most 70 characters.
         - blueprint.modules: 4 or 5 machine parts in left-to-right order (input, then processing, then output).
           Pick each kind so it matches its label, and don't repeat a kind. label: a punny callout, at most 22 characters.
+          Every machine should look different: choose the parts that best fit this particular task from the whole list,
+          rather than reaching for the same favorites (like hopper and brain) every time.
           The kinds mean: {string.Join("; ", Catalog.Modules.Select(m => $"{m.Kind} = {m.Hint}"))}.
         - blueprint.fineprint: a silly warning label, at most 70 characters.
         - practical.headline: one sentence of at most 25 words on how AI would handle it.

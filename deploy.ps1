@@ -44,6 +44,11 @@ az webapp deploy --subscription $Subscription --resource-group $ResourceGroup --
     --src-path $zip --type zip --output none
 
 $url = "https://$App.azurewebsites.net"
-$config = Invoke-RestMethod "$url/api/config" -TimeoutSec 60
+$config = $null
+for ($try = 0; $try -lt 24 -and -not $config; $try++) {
+    # The site restarts after a deploy and can answer "service unavailable" for a little while.
+    try { $config = Invoke-RestMethod "$url/api/config" -TimeoutSec 30 } catch { Start-Sleep -Seconds 5 }
+}
+if (-not $config) { throw "Deployed, but $url isn't answering after two minutes. Check the site in the Azure portal." }
 $brain = if ($config.claudeEnabled) { "Claude" } else { "backup elf only (ANTHROPIC_API_KEY isn't set)" }
 Write-Host "Deployed: $url  (elf brain: $brain)" -ForegroundColor Green

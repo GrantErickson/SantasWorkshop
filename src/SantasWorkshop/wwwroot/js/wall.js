@@ -1,5 +1,6 @@
 import { $, api, applyBranding, countTo, esc, fmt, listen, snow } from "./common.js";
 import { renderBlueprint } from "./blueprint.js";
+import { setUpSound, sfx, startMachine, startMusic } from "./sound.js";
 
 const FEATURE_SECONDS = 12;     // how long each blueprint stays in the featured spot
 const CELEBRATE_SECONDS = 10;   // how long a brand-new wish takes over the screen
@@ -33,6 +34,8 @@ init();
 
 async function init() {
   snow($("#snow"), { count: 110 });
+  setUpSound({ page: "wall", musicButton: true });
+  startMusic();
   config = await applyBranding();
   await refresh();
   listen(
@@ -151,6 +154,8 @@ function celebrate(item) {
   $("#celebrateMeta").innerHTML = `<span class="chip">${esc(item.category)}</span> ≈ <b>${fmt(item.hours)}</b> hours a year back`;
   const overlay = $("#celebrate");
   overlay.classList.remove("hidden", "leaving");
+  sfx("fanfare");
+  startMachine((item.blueprint?.modules ?? []).map((m) => m.kind), $("#celebrateCard svg"), { delay: 1 });
   clearTimeout(celebrate.timer);
   celebrate.timer = setTimeout(() => {
     overlay.classList.add("leaving");
