@@ -179,15 +179,16 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
   warning label), the practical answer, an hours estimate with its assumptions, a category, an anonymized line for the
   wall, and an `appropriate` flag. Unsuitable wishes get a friendly "Ho ho… no!" on the kiosk and never reach the wall.
 - **The blueprint drawing is code, not image generation.** `wwwroot/js/blueprint.js` draws each part Claude picks
-  (33 of them), on one of several machine shapes with its own motion and pipe fittings, seeded from the wish so it
-  always draws the same way. That keeps every card on-brand and instant. To add a part, add it to `Catalog.Modules`,
-  `PARTS` in blueprint.js, and `PART_SOUND` in `wwwroot/js/sound.js`.
+  (63 of them), on one of several machine shapes with its own motion and pipe fittings, seeded from the wish so it
+  always draws the same way. That keeps every card on-brand and instant. The prompt lists the parts in a fresh random
+  order for every wish so Claude doesn't keep picking the first few. To add a part, add it to `Catalog.Modules`,
+  `PARTS` in blueprint.js, `PART_SOUND` in `wwwroot/js/sound.js`, and `Looks` in `Services/PicturePainter.cs`.
 - **The sound effects are synthesized in the browser** (`wwwroot/js/sound.js`). The wall plays a fanfare for each new
   wish, the kiosk chimes as guests tap, and the counter ticks and cha-chings as the hours go up. When a blueprint
   appears, each part lights up and makes its own noise, left to right.
 - **The music is recorded carols** in `wwwroot/audio/`: Kevin MacLeod's (CC BY 4.0) and US military bands'
-  (public domain). The wall shuffles through all of them; the kiosk plays a random upbeat one, from its liveliest
-  point, while the elves work. The screens credit each track while it plays, which CC BY requires; sources and
+  (public domain). The wall shuffles through all of them; the kiosk shuffles through the upbeat ones the whole time
+  (starting with the first guest's tap) and goes silent while the microphone is listening. The screens credit each track while it plays, which CC BY requires; sources and
   licenses are in `wwwroot/audio/CREDITS.txt`. The files are trimmed and evened out to the same loudness. To add a
   track, process it the same way (two-pass ffmpeg `loudnorm` to -16 LUFS, 112 kbps MP3), add it to `TRACKS` in
   sound.js, and credit it in CREDITS.txt. Only use recordings that are public domain or CC BY, of public-domain
@@ -208,7 +209,8 @@ Foundry) to paint the same machine, in the background. It takes about 12 seconds
 - the guest's phone card shows it under the blueprint (or "The elves are painting…" until it's ready).
 
 The prompt is built from the blueprint's parts plus Claude's anonymized wall text, never the guest's own words, and
-asks for no text in the image. Flagged wishes don't get pictures, and every picture is labelled "Painted by AI".
+asks for no text in the image. Each picture gets a randomly chosen art style, setting, machine shape, moment, camera
+angle and lighting, so the wall doesn't fill up with look-alikes and **Repaint** gives a genuinely different take. Flagged wishes don't get pictures, and every picture is labelled "Painted by AI".
 Pictures are 1280 × 800 PNGs (about 2 MB) saved in `pictures/` inside the data folder.
 
 Each picture is billed by the Foundry resource. The booth paints one at a time and waits and retries when the model

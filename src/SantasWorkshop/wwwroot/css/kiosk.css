@@ -140,7 +140,8 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 
 @keyframes candy { to { background-position: 34px 0; } }
 
-.k-now-playing { margin-top: 2.2em; }
+/* Keeps its line even when nothing is playing, so the screen doesn't jump when a carol starts. */
+.k-now-playing, .k-now-playing:empty { display: block; flex: none; min-height: 1.3em; margin: .5rem 0 0; text-align: center; font-size: .8rem; opacity: .75; }
 
 .k-wish-echo { font-family: var(--font-hand); font-size: 1.3rem; color: var(--gold); margin-top: 1.4em; max-width: 36em; }
 

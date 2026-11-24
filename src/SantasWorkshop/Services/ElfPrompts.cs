@@ -33,9 +33,10 @@ public static class ElfPrompts
         - blueprint.tagline: one playful line, at most 70 characters.
         - blueprint.modules: 4 or 5 machine parts in left-to-right order (input, then processing, then output).
           Pick each kind so it matches its label, and don't repeat a kind. label: a punny callout, at most 22 characters.
-          Every machine should look different: choose the parts that best fit this particular task from the whole list,
-          rather than reaching for the same favorites (like hopper and brain) every time.
-          The kinds mean: {string.Join("; ", Catalog.Modules.Select(m => $"{m.Kind} = {m.Hint}"))}.
+          Every machine should look different: choose the parts that most specifically fit this particular task from
+          the whole list, rather than reaching for the same favorites (like hopper, brain, bell and gift-wrapper) every
+          time. The human review belongs in the practical half, so don't add a bell just for that.
+          The kinds mean: {string.Join("; ", ShuffledModules())}.
         - blueprint.fineprint: a silly warning label, at most 70 characters.
         - practical.headline: one sentence of at most 25 words on how AI would handle it.
         - practical.steps: exactly 3 steps of at most 18 words each, describing how the solution works.
@@ -50,6 +51,14 @@ public static class ElfPrompts
         """;
 
     public static string WishUser(string text) => $"<wish>{text}</wish>";
+
+    /// <summary>The part list in a fresh random order each time, so the parts listed first aren't always favored.</summary>
+    private static IEnumerable<string> ShuffledModules()
+    {
+        var modules = Catalog.Modules.ToArray();
+        Random.Shared.Shuffle(modules);
+        return modules.Select(m => $"{m.Kind} = {m.Hint}");
+    }
 
     public static string PlanSystem(WorkshopOptions o) => $"""
         You write short, practical "AI starter plans" for {o.CompanyName}, a software consultancy that builds custom

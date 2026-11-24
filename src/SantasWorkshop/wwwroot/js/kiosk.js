@@ -1,6 +1,6 @@
 import { $, $$, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
 import { gear, renderBlueprint } from "./blueprint.js";
-import { setUpSound, sfx, showNowPlaying, startMachine, startMusic, stopMusic } from "./sound.js";
+import { hushMusic, setUpSound, sfx, showNowPlaying, startMachine, startMusic } from "./sound.js";
 import { makeFlip, waitForPicture } from "./picture.js";
 
 const RESULT_IDLE_SECONDS = 120; // reset to the start screen after this long without a touch
@@ -106,6 +106,7 @@ async function init() {
 
   setUpSound({ page: "kiosk", mount: $("#soundSlot") });
   showNowPlaying($("#nowPlaying"));
+  startMusic({ upbeat: true }); // carols the whole time; they start on the first guest's tap
   resultFlip = makeFlip($("#rFlip"), { interactive: true });
   config = await applyBranding();
   setUpVoice();
@@ -154,7 +155,6 @@ async function makeWish() {
   $("#wishEcho").textContent = `“I wish AI would ${text}”`;
   show("working");
   sfx("send");
-  startMusic({ upbeat: true, lively: true }); // a few seconds of a random upbeat carol while the elves work
   const stopWorking = animateWorking();
 
   try {
@@ -164,7 +164,6 @@ async function makeWish() {
       headers: kioskKey ? { "X-Kiosk-Key": kioskKey } : {},
     });
     stopWorking();
-    stopMusic(0.4);
     if (!res.wish.appropriate) {
       show("naughty");
       sfx("naughty");
@@ -174,7 +173,6 @@ async function makeWish() {
     showResult(res.wish);
   } catch (err) {
     stopWorking();
-    stopMusic(0.4);
     $("#oopsMsg").textContent = err.status === 401
       ? "This kiosk isn't unlocked yet. Ask a staff member to open it with the kiosk link."
       : err.status === 429
@@ -305,6 +303,7 @@ function startListening(Recognition) {
   recognition.onerror = stopListening;
   recognition.start();
   sfx("micOn");
+  hushMusic(true); // so the carols don't end up in the wish
   $("#micBtn").classList.add("listening");
 }
 
@@ -314,6 +313,7 @@ function stopListening() {
     recognition = null;
     try { r.stop(); } catch { /* already stopped */ }
     sfx("micOff");
+    hushMusic(false);
   }
   $("#micBtn").classList.remove("listening");
 }

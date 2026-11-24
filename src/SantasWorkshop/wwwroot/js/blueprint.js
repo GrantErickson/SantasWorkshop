@@ -468,6 +468,381 @@ const PARTS = {
     </g></g>
     <path d="M-34,40 L-38,54 M34,40 L38,54"/>`;
   },
+
+  sleigh: () => `
+    <g class="bp-ride">
+      <rect x="-30" y="-32" width="22" height="26" ${FILL2}/>
+      <rect x="-4" y="-24" width="18" height="18" ${FILL2}/>
+      <path d="M-19,-32 L-19,-6 M5,-24 L5,-6" stroke="${CORAL}" stroke-width="3"/>
+      <path d="M-46,-6 L30,-6 C40,-6 42,-20 38,-34 L50,-34 C58,-14 50,14 30,14 L-40,14 C-52,14 -54,-6 -46,-6 Z" ${FILL}/>
+    </g>
+    <path d="M-38,14 L-38,30 M22,14 L22,30" stroke-width="2"/>
+    <path d="M-56,30 L40,30 C52,30 58,22 56,12" stroke-width="4"/>
+    ${star(50, -50, 6)}${star(-48, -40, 4)}`,
+
+  snowplow: () => {
+    const wheel = (x) => `<g transform="translate(${x},36)"><g>${spin("0;360", "1.2s")}<circle r="6"/><path d="M-6,0 L6,0" stroke-width="1.2"/></g></g>`;
+    return `
+    <g class="bp-rise"><circle cx="-4" cy="-52" r="4"/><circle cx="2" cy="-62" r="5"/></g>
+    <g class="bp-rumble">
+      <path d="M-8,-30 L-8,-46 L0,-46 L0,-30" stroke-width="2"/>
+      <rect x="-34" y="-30" width="42" height="28" rx="4" ${FILL}/>
+      <rect x="-26" y="-24" width="20" height="14" ${FILL2}/>
+      <rect x="-46" y="-2" width="66" height="26" rx="4" ${FILL2}/>
+    </g>
+    <path d="M20,8 L32,8" stroke-width="4"/>
+    <path d="M30,-22 C48,-12 52,22 42,40 L30,40 Z" ${FILL2}/>
+    <g class="bp-fall" fill="${LINE}" stroke="none"><rect x="50" y="-10" width="6" height="7"/><rect x="54" y="6" width="5" height="6"/><circle cx="50" cy="20" r="2.4"/></g>
+    <rect x="-46" y="26" width="66" height="20" rx="10" ${FILL}/>
+    ${wheel(-34)}${wheel(-13)}${wheel(8)}`;
+  },
+
+  "cookie-cutter": () => `
+    <rect x="-48" y="-64" width="96" height="12" rx="3" ${FILL2}/>
+    <path d="M-40,-52 L-40,42 M40,-52 L40,42"/>
+    <g class="bp-press">
+      <rect x="-5" y="-52" width="10" height="16" ${FILL}/>
+      <circle cx="0" cy="-30" r="7" ${FILL2} stroke="${GOLD}"/>
+      <path d="M-6,-24 L-18,-20 L-16,-14 L-7,-16 L-10,0 L-3,0 L0,-8 L3,0 L10,0 L7,-16 L16,-14 L18,-20 L6,-24 Z" ${FILL2} stroke="${GOLD}"/>
+    </g>
+    <rect x="-34" y="18" width="68" height="14" rx="6" ${FILL}/>
+    <path d="M-28,25 C-20,21 -12,29 -4,25 C4,21 12,29 20,25" stroke-width="1.5" stroke-opacity=".6"/>
+    <path d="M-50,42 L50,42" stroke-width="4"/>`,
+
+  sieve: () => `
+    <g>${slide("-5 0;5 0;-5 0", "0.5s")}
+      <g ${FILL2}><rect x="-28" y="-36" width="12" height="15"/><rect x="2" y="-38" width="14" height="17"/></g>
+      <path d="M-44,-20 L44,-20 L34,8 L-34,8 Z" ${FILL}/>
+      <path d="M-40,-10 L40,-10 M-37,-1 L37,-1 M-24,-20 L-20,8 M-8,-20 L-7,8 M8,-20 L7,8 M24,-20 L20,8" stroke-width="1.2" stroke-opacity=".6"/>
+      <path d="M44,-20 L62,-30" stroke-width="5"/>
+    </g>
+    <g class="bp-fall" fill="${CORAL}" stroke="none"><circle cx="-14" cy="16" r="2.5"/><circle cx="2" cy="20" r="2"/><circle cx="16" cy="15" r="2.5"/></g>
+    <path d="M-30,30 L30,30 L24,52 L-24,52 Z" ${FILL}/>`,
+
+  phonograph: () => {
+    const note = (x, y, cls) => `<g class="bp-rise ${cls}" stroke="${GOLD}"><path d="M${x},${y} L${x},${y - 12} L${x + 8},${y - 14} L${x + 8},${y - 2}"/><circle cx="${x - 2}" cy="${y}" r="2.5" fill="${GOLD}"/><circle cx="${x + 6}" cy="${y - 2}" r="2.5" fill="${GOLD}"/></g>`;
+    return `
+    <path d="M16,-6 C16,-30 2,-50 -30,-64 C-22,-78 -2,-84 8,-74 C10,-50 24,-26 26,-6 Z" ${FILL}/>
+    <path d="M14,18 L20,-6" stroke-width="3"/>
+    <ellipse cx="-8" cy="18" rx="32" ry="6" ${FILL2}/>
+    <ellipse cx="-8" cy="18" rx="8" ry="2" stroke="${GOLD}">${anim("rx", "8;20;8", "1s")}</ellipse>
+    <rect x="-42" y="24" width="80" height="28" rx="4" ${FILL}/>
+    <circle cx="26" cy="38" r="4" fill="${GOLD}" stroke="none" class="bp-flicker"/>
+    ${note(-46, -40, "")}${note(30, -60, "bp-rise-2")}`;
+  },
+
+  typewriter: () => {
+    const keys = [];
+    for (const [r, y] of [6, 18, 30].entries()) {
+      for (let c = 0; c < 8 - r; c++) {
+        const x = -35 + r * 5 + c * 10;
+        keys.push(`<circle${(r * 8 + c) % 3 === 1 ? ` class="bp-key" style="animation-delay:${(-(r * 8 + c) * 0.27).toFixed(2)}s"` : ""} cx="${x}" cy="${y}" r="3.6" ${FILL2}/>`);
+      }
+    }
+    return `
+    <g class="bp-print">
+      <rect x="-24" y="-62" width="48" height="46" ${FILL}/>
+      <path d="M-16,-52 L16,-52 M-16,-44 L10,-44 M-16,-36 L14,-36" stroke="${GOLD}" stroke-width="1.5"/>
+    </g>
+    <rect x="-40" y="-20" width="80" height="12" rx="6" ${FILL2}/>
+    <circle cx="-46" cy="-14" r="5" ${FILL2}/><circle cx="46" cy="-14" r="5" ${FILL2}/>
+    <path d="M-40,-20 L-52,-30 L-58,-28" stroke-width="2"/>
+    <path d="M-50,-6 L50,-6 L56,40 L-56,40 Z" ${FILL}/>
+    ${keys.join("")}
+    <path d="M-60,40 L60,40" stroke-width="3"/>`;
+  },
+
+  scale: () => `
+    <path d="M0,-50 L0,40" stroke-width="4"/>
+    <path d="M-24,48 L24,48 L16,40 L-16,40 Z" ${FILL2}/>
+    <circle cx="0" cy="-54" r="5" ${FILL2}/>
+    <g transform="translate(0,-46)"><g>${spin("-8;8;-8", "3s")}
+      <path d="M-44,0 L44,0" stroke-width="4"/>
+      <path d="M-44,0 L-56,28 M-44,0 L-32,28 M44,0 L32,28 M44,0 L56,28" stroke-width="1.4"/>
+      <rect x="-52" y="16" width="14" height="12" ${FILL}/>
+      <circle cx="44" cy="22" r="6" fill="${GOLD}" stroke="none"/>
+      <path d="M-60,28 L-28,28 C-30,38 -58,38 -60,28 Z" ${FILL2}/>
+      <path d="M28,28 L60,28 C58,38 30,38 28,28 Z" ${FILL2}/>
+    </g></g>`,
+
+  radar: () => `
+    <rect x="-30" y="34" width="60" height="18" rx="3" ${FILL2}/>
+    <path d="M-6,30 L-6,34 M6,30 L6,34"/>
+    <circle cx="0" cy="-10" r="40" ${FILL}/>
+    <circle cx="0" cy="-10" r="26" stroke-opacity=".4"/><circle cx="0" cy="-10" r="12" stroke-opacity=".4"/>
+    <path d="M-40,-10 L40,-10 M0,-50 L0,30" stroke-width="1" stroke-opacity=".4"/>
+    <g transform="translate(0,-10)"><g>${spin("0;360", "3s")}
+      <path d="M0,0 L0,-40 A40,40 0 0 1 20,-34.6 Z" fill="${GOLD}" fill-opacity=".22" stroke="none"/>
+      <path d="M0,0 L0,-40" stroke="${GOLD}" stroke-width="2.4"/>
+    </g></g>
+    <circle cx="18" cy="-26" r="3" fill="${CORAL}" stroke="none" class="bp-beacon"/>
+    <circle cx="-16" cy="2" r="2.5" fill="${CORAL}" stroke="none" class="bp-beacon" style="animation-delay:-.45s"/>`,
+
+  switchboard: () => {
+    const jacks = [];
+    for (const y of [-42, -26, -10]) for (const x of [-32, -16, 0, 16, 32]) jacks.push(`<circle cx="${x}" cy="${y}" r="3.5" ${FILL2}/>`);
+    return `
+    <rect x="-46" y="-56" width="92" height="76" rx="6" ${FILL}/>
+    ${jacks.join("")}
+    <path d="M-32,-42 C-32,12 16,12 16,-26" stroke="${GOLD}"/>
+    <path d="M0,-10 C0,28 -32,18 -32,-26" stroke="${CORAL}"/>
+    <path class="bp-flicker" d="M32,-42 C40,4 -16,10 -16,-42" stroke="${GOLD}"/>
+    <rect x="-46" y="20" width="92" height="20" ${FILL2}/>
+    <g fill="${GOLD}" stroke="none"><circle cx="-24" cy="30" r="3" class="bp-beacon"/><circle cx="0" cy="30" r="3" class="bp-beacon" style="animation-delay:-.3s"/><circle cx="24" cy="30" r="3" class="bp-beacon" style="animation-delay:-.6s"/></g>
+    <path d="M-38,40 L-42,54 M38,40 L42,54"/>`;
+  },
+
+  "piggy-bank": () => `
+    <g class="bp-feed"><circle cx="2" cy="-58" r="7" fill="${GOLD}" fill-opacity=".8" stroke="${GOLD}"/></g>
+    <path d="M-26,28 L-26,48 M-10,30 L-10,48 M14,30 L14,48 M28,28 L28,48" stroke-width="7"/>
+    <ellipse cx="0" cy="0" rx="44" ry="32" ${FILL}/>
+    <path d="M-8,-30 L12,-30" stroke-width="3"/>
+    <path d="M20,-26 L28,-44 L36,-22" ${FILL2}/>
+    <ellipse cx="46" cy="2" rx="7" ry="10" ${FILL2}/>
+    <circle cx="45" cy="-2" r="1.5" fill="${LINE}" stroke="none"/><circle cx="45" cy="6" r="1.5" fill="${LINE}" stroke="none"/>
+    <circle cx="28" cy="-10" r="2.5" fill="${LINE}" stroke="none"/>
+    <path d="M-44,-4 C-54,-10 -58,4 -50,4 C-46,4 -48,-4 -54,-2"/>`,
+
+  compass: () => `
+    <path d="M-30,30 L30,30 L22,52 L-22,52 Z" ${FILL2}/>
+    <circle cx="0" cy="-56" r="5" ${FILL2}/>
+    <circle cx="0" cy="-12" r="40" ${FILL}/>
+    <circle cx="0" cy="-12" r="32" stroke-opacity=".45"/>
+    <text x="0" y="-34" text-anchor="middle" font-size="11" fill="${GOLD}" stroke="none">N</text>
+    <path d="M-32,-12 L-26,-12 M26,-12 L32,-12 M0,14 L0,20" stroke-width="1.6"/>
+    <g transform="translate(0,-12)"><g>${spin("-30;20;-10;10;0;-30", "5s")}
+      <path d="M0,-26 L7,0 L0,26 L-7,0 Z" ${FILL2}/>
+      <path d="M0,-26 L7,0 L-7,0 Z" fill="${CORAL}" stroke="none"/>
+    </g></g>
+    <circle cx="0" cy="-12" r="3" fill="${LINE}" stroke="none"/>`,
+
+  "tag-gun": () => `
+    <circle cx="8" cy="-44" r="12" ${FILL2}/>
+    <g transform="translate(8,-44)"><g>${spin("0;360", "3s")}<path d="M0,0 L0,-8" stroke="${GOLD}" stroke-width="2"/></g></g>
+    <g class="bp-post"><path d="M40,-26 L56,-26 L62,-18 L56,-10 L40,-10 Z" fill="${GOLD}" fill-opacity=".55" stroke="${GOLD}"/><circle cx="55" cy="-18" r="1.8" fill="${LINE}" stroke="none"/></g>
+    <path d="M-44,-32 L24,-32 Q34,-32 34,-22 L34,-6 L-10,-6 L-18,30 Q-20,38 -28,38 L-34,38 Q-40,38 -38,30 L-30,-6 L-44,-6 Z" ${FILL}/>
+    <rect x="34" y="-24" width="10" height="12" ${FILL2}/>
+    <rect x="-34" y="-26" width="30" height="12" ${FILL2}/>
+    <g transform="translate(-8,-6)"><g>${spin("0;0;-25;0", "1.6s", 'keyTimes="0;0.6;0.7;1"')}<path d="M0,0 C-2,10 4,16 10,13" stroke-width="3"/></g></g>`,
+
+  clipboard: () => {
+    const rows = [-34, -18, -2, 14, 30];
+    return `
+    <path d="M-26,46 L-30,54 M26,46 L30,54"/>
+    <rect x="-36" y="-58" width="72" height="104" rx="6" ${FILL}/>
+    <rect x="-28" y="-46" width="56" height="86" ${FILL2}/>
+    <rect x="-16" y="-64" width="32" height="14" rx="4" ${FILL2}/>
+    ${rows.map((y) => `<rect x="-22" y="${y - 4}" width="9" height="9" stroke-width="1.5"/><path d="M-6,${y} L20,${y}" stroke-width="1.5" stroke-opacity=".7"/>`).join("")}
+    ${rows.map((y, i) => `<path class="bp-cell" style="animation-delay:${(i * 0.5).toFixed(1)}s" d="M-22,${y - 1} L-18,${y + 4} L-10,${y - 8}" stroke="${GOLD}" stroke-width="2.4"/>`).join("")}`;
+  },
+
+  "sewing-machine": () => `
+    <path d="M-40,40 L-44,54 M40,40 L44,54"/>
+    <path d="M-2,-56 C10,-64 30,-58 32,-24" stroke="${CORAL}" stroke-width="1.2"/>
+    <rect x="-8" y="-64" width="12" height="10" ${FILL2}/>
+    <path d="M-2,-64 L-2,-54" stroke="${CORAL}" stroke-width="4"/>
+    <path d="M-40,28 L-40,-38 Q-40,-50 -28,-50 L30,-50 Q42,-50 42,-38 L42,-24 L22,-24 L22,-34 L-22,-34 L-22,28 Z" ${FILL}/>
+    <g>${slide("0 0;0 10;0 0", "0.4s")}<path d="M32,-24 L32,0" stroke-width="2.4"/><path d="M32,0 L32,8" stroke="${GOLD}" stroke-width="1.4"/></g>
+    <g transform="translate(-40,-30)"><g>${spin("0;360", "1.6s")}<circle r="10" ${FILL2}/><path d="M-10,0 L10,0 M0,-10 L0,10" stroke-width="1.2"/></g></g>
+    <path class="bp-flow" d="M-50,24 L58,24" stroke="${GOLD}" stroke-dasharray="5 4"/>
+    <rect x="-50" y="28" width="104" height="12" rx="3" ${FILL2}/>`,
+
+  eraser: () => `
+    <path d="M-46,-66 L46,-66" stroke-width="4"/>
+    <path d="M-46,-66 L-46,34 M46,-66 L46,-10 M-40,34 L-44,54 M40,34 L44,54" stroke-width="2"/>
+    <rect x="-46" y="-10" width="92" height="44" ${FILL2}/>
+    <path d="M-38,4 L-20,4 M-38,14 C-30,8 -26,20 -18,12 C-12,6 -8,18 0,12 M-36,24 L-26,24" stroke-width="1.5"/>
+    <path d="M12,4 L38,4 M12,14 L34,14 M12,24 L30,24" stroke="${GOLD}" stroke-width="1.5"/>
+    <g>${slide("-18 0;14 0;-18 0", "1.4s")}
+      <path d="M0,-66 L0,-46" stroke-width="3"/>
+      <path d="M-16,-46 L16,-46 L20,-10 L-12,-10 Z" ${FILL}/>
+      <path d="M-14,-24 L19,-24" stroke="${CORAL}" stroke-width="7" stroke-opacity=".7"/>
+    </g>
+    <g class="bp-fall" fill="${LINE}" stroke="none"><circle cx="-10" cy="-4" r="1.6"/><circle cx="4" cy="-2" r="1.6"/><circle cx="-2" cy="-6" r="1.2"/></g>`,
+
+  keyring: () => {
+    const key = (a, color) => `<g transform="rotate(${a})"><circle cy="25" r="7" stroke="${color}"/><path d="M0,32 L0,60 M0,48 L7,48 M0,55 L6,55" stroke="${color}" stroke-width="3"/></g>`;
+    return `
+    <path d="M-34,40 L-38,54 M34,40 L38,54"/>
+    <rect x="-44" y="-74" width="88" height="114" rx="6" ${FILL}/>
+    <path d="M-44,-62 L44,-62" stroke-opacity=".5"/>
+    <path d="M0,-62 L0,-56" stroke-width="3"/>
+    <g transform="translate(0,-38)"><g>${spin("-10;10;-10", "2.4s")}
+      <circle r="18" stroke-width="4"/>
+      ${key(-30, LINE)}${key(0, GOLD)}${key(30, CORAL)}
+    </g></g>`;
+  },
+
+  globe: () => `
+    <path d="M-26,52 L26,52 M0,52 L0,32" stroke-width="3"/>
+    <path d="M-38,-30 A40,40 0 0 0 24,28" stroke-width="3"/>
+    <circle cx="0" cy="-6" r="32" ${FILL}/>
+    <ellipse cx="0" cy="-6" rx="32" ry="32" stroke-opacity=".6">${anim("rx", "32;2;32", "3s")}</ellipse>
+    <ellipse cx="0" cy="-6" rx="16" ry="32" stroke-opacity=".6">${anim("rx", "16;32;2;16", "3s")}</ellipse>
+    <path d="M-32,-6 L32,-6 M-28,-22 L28,-22 M-28,10 L28,10" stroke-width="1.2" stroke-opacity=".5"/>
+    <path d="M-58,-76 L-2,-76 L-2,-50 L-18,-50 L-28,-41 L-28,-50 L-58,-50 Z" ${FILL2}/>
+    <text x="-30" y="-58" text-anchor="middle" font-size="11" fill="${GOLD}" stroke="none" class="bp-swap-a">Hello!</text>
+    <text x="-30" y="-58" text-anchor="middle" font-size="11" fill="${GOLD}" stroke="none" class="bp-swap-b">Hola!</text>`,
+
+  megaphone: () => `
+    <path d="M-20,14 L-20,40 M-36,54 L-20,40 L-4,54" stroke-width="3"/>
+    <path d="M-20,-6 L-24,14 L-14,14 L-10,-6" ${FILL2}/>
+    <rect x="-42" y="-20" width="8" height="16" rx="2" ${FILL2}/>
+    <path d="M-34,-18 L-14,-18 L30,-46 L30,22 L-14,-6 L-34,-6 Z" ${FILL}/>
+    <ellipse cx="30" cy="-12" rx="6" ry="34" ${FILL2}/>
+    <path d="M-6,-12 L20,-12" stroke="${CORAL}" stroke-width="3"/>
+    <g stroke="${GOLD}">
+      <path class="bp-flicker" d="M42,-30 C50,-20 50,-4 42,6"/>
+      <path class="bp-flicker" style="animation-delay:-.6s" d="M50,-42 C62,-24 62,0 50,18" stroke-opacity=".7"/>
+    </g>`,
+
+  camera: () => `
+    <path d="M0,20 L-26,54 M0,20 L26,54 M0,20 L0,54" stroke-width="3"/>
+    <path d="M-18,-34 L-12,-46 L12,-46 L18,-34" ${FILL2}/>
+    <rect x="-34" y="-42" width="10" height="8" ${FILL2}/>
+    <rect x="-42" y="-34" width="84" height="54" rx="8" ${FILL}/>
+    <circle cx="0" cy="-7" r="18" ${FILL2}/>
+    <circle cx="0" cy="-7" r="10"/>
+    <path d="M-5,-12 A6,6 0 0 1 2,-14" stroke-opacity=".6"/>
+    <rect x="24" y="-44" width="14" height="10" ${FILL2}/>
+    <g class="bp-zap" stroke="${GOLD}" stroke-width="2"><path d="M31,-50 L31,-62 M22,-48 L15,-57 M40,-48 L47,-57"/></g>`,
+
+  "paper-plane": () => {
+    const plane = `<path d="M-21,-6 L27,-24 L-3,12 L-6,-2 Z M-6,-2 L27,-24" fill="rgba(255,255,255,.3)"/>`;
+    const times = 'keyTimes="0;0.6;1"';
+    return `
+    <rect x="-50" y="30" width="100" height="14" rx="3" ${FILL2}/>
+    <path d="M-44,30 L28,-8 L36,0 L-34,30" ${FILL}/>
+    <path d="M-40,44 L-44,54 M40,44 L44,54"/>
+    <g transform="translate(-34,12)">${plane}</g>
+    <g transform="translate(-16,4)"><g>${slide("0 0;40 -50;40 -50", "2.4s", times)}<g>${anim("opacity", "1;1;0", "2.4s", times)}${plane}</g></g></g>`;
+  },
+
+  jigsaw: () => `
+    <path d="M-30,30 L-36,54 M30,30 L36,54"/>
+    <rect x="-40" y="-50" width="80" height="80" rx="4" ${FILL}/>
+    <rect x="0" y="-10" width="40" height="40" stroke-dasharray="4 4" stroke-opacity=".5"/>
+    <path d="M0,-50 L0,-10 M-40,-10 L0,-10 M0,-10 L0,30" stroke-width="1.4"/>
+    <circle cx="0" cy="-30" r="6" ${FILL2}/><circle cx="-20" cy="-10" r="6" ${FILL2}/><circle cx="20" cy="-10" r="6" ${FILL2}/>
+    <g>${slide("24 -46;24 -46;0 0;0 0;24 -46", "3.6s", 'keyTimes="0;0.2;0.5;0.85;1"')}
+      <rect x="1" y="-9" width="38" height="38" rx="3" fill="${GOLD}" fill-opacity=".45" stroke="${GOLD}"/>
+      <circle cx="0" cy="10" r="6" fill="${GOLD}" fill-opacity=".45" stroke="${GOLD}"/>
+    </g>`,
+
+  gumball: () => `
+    <rect x="-8" y="-72" width="16" height="8" rx="3" ${FILL2}/>
+    <circle cx="0" cy="-32" r="32" ${FILL}/>
+    <g stroke="none">
+      <circle cx="-14" cy="-20" r="7" fill="${GOLD}" fill-opacity=".6"/><circle cx="2" cy="-16" r="7" fill="${CORAL}" fill-opacity=".6"/>
+      <circle cx="16" cy="-22" r="7" fill="rgba(255,255,255,.4)"/><circle cx="-6" cy="-32" r="7" fill="rgba(255,255,255,.4)"/>
+      <circle cx="10" cy="-36" r="7" fill="${GOLD}" fill-opacity=".6"/><circle cx="-18" cy="-40" r="6" fill="${CORAL}" fill-opacity=".6"/>
+    </g>
+    <path d="M-22,-50 A26,26 0 0 1 -4,-58" stroke-opacity=".55"/>
+    <path d="M-26,-4 L26,-4 L32,40 L-32,40 Z" ${FILL2}/>
+    <g transform="translate(-6,14)"><g>${spin("0;0;360;360", "2.6s", 'keyTimes="0;0.4;0.6;1"')}<circle r="8" ${FILL}/><path d="M0,0 L0,-8" stroke="${GOLD}" stroke-width="2"/></g></g>
+    <path d="M10,26 L24,26 L24,34" stroke-width="2"/>
+    <circle cx="30" cy="34" r="5" fill="${GOLD}" stroke="none" class="bp-fall"/>
+    <rect x="-36" y="40" width="72" height="10" rx="3" ${FILL2}/>`,
+
+  "fishing-rod": () => `
+    <rect x="-54" y="30" width="28" height="24" ${FILL2}/>
+    <path d="M-54,42 L-26,42" stroke-width="1.2" stroke-opacity=".6"/>
+    <path d="M-40,30 L40,-62" stroke-width="3"/>
+    <circle cx="-28" cy="16" r="6" ${FILL2}/>
+    <g transform="translate(-28,16)"><g>${spin("0;360", "1s")}<path d="M0,0 L0,-6" stroke-width="1.5"/></g></g>
+    <path d="M40,-62 L40,8" stroke-width="1.2">${anim("d", "M40,-62 L40,8;M40,-62 L40,-24;M40,-62 L40,8", "3s")}</path>
+    <g>${slide("0 0;0 -32;0 0", "3s")}
+      <path d="M40,4 C40,12 46,12 46,8" stroke-width="1.6"/>
+      <rect x="33" y="10" width="14" height="16" fill="${GOLD}" fill-opacity=".55" stroke="${GOLD}"/>
+    </g>
+    <path d="M-20,40 C-10,34 0,46 10,40 C20,34 30,46 40,40 C46,36 52,40 58,40 L58,54 L-20,54 Z" ${FILL}/>
+    <path class="bp-flow" d="M-14,47 L54,47" stroke-dasharray="6 6" stroke-opacity=".5"/>`,
+
+  toaster: () => `
+    <g>${slide("0 0;0 0;0 -26;0 -26;0 0", "2.8s", 'keyTimes="0;0.4;0.5;0.85;1"')}
+      <rect x="-24" y="-38" width="16" height="24" rx="4" ${FILL2}/><rect x="8" y="-38" width="16" height="24" rx="4" ${FILL2}/>
+      <path d="M-20,-30 L-12,-30 M-20,-24 L-14,-24 M12,-30 L20,-30 M12,-24 L18,-24" stroke="${GOLD}" stroke-width="1.5"/>
+    </g>
+    <rect x="-42" y="-20" width="84" height="62" rx="16" ${FILL}/>
+    <path d="M-26,-20 L-6,-20 M6,-20 L26,-20" stroke-width="4"/>
+    <path d="M44,-4 L44,30" stroke-opacity=".5"/>
+    <rect x="42" y="0" width="12" height="6" rx="2" ${FILL2}/>
+    <circle cx="-24" cy="20" r="6"/>
+    <path d="M-24,20 L-20,16" stroke="${GOLD}" stroke-width="2"/>
+    <path d="M-30,42 L-30,50 M30,42 L30,50" stroke-width="4"/>`,
+
+  thermometer: () => {
+    const ticks = Array.from({ length: 6 }, (_, i) => `M10,${-58 + i * 14} L${i % 2 ? 15 : 18},${-58 + i * 14}`).join(" ");
+    return `
+    <path d="M-24,54 L24,54" stroke-width="4"/>
+    <rect x="-10" y="-70" width="20" height="96" rx="10" ${FILL}/>
+    <path d="${ticks}" stroke-width="1.5"/>
+    <rect x="-4" y="-20" width="8" height="50" fill="${CORAL}" fill-opacity=".8" stroke="none">${anim("y", "-20;-56;-34;-20", "4s")}${anim("height", "50;86;64;50", "4s")}</rect>
+    <circle cx="0" cy="36" r="15" fill="${CORAL}" fill-opacity=".6"/>
+    <g transform="translate(-36,8)"><circle r="11" ${FILL2}/><circle cx="-4" cy="-3" r="1.5" fill="${LINE}" stroke="none"/><circle cx="4" cy="-3" r="1.5" fill="${LINE}" stroke="none"/><path d="M-5,6 Q0,1 5,6" stroke-width="1.6"/></g>
+    <g transform="translate(36,-50)" stroke="${GOLD}"><circle r="11" ${FILL2}/><circle cx="-4" cy="-3" r="1.5" fill="${GOLD}" stroke="none"/><circle cx="4" cy="-3" r="1.5" fill="${GOLD}" stroke="none"/><path d="M-5,3 Q0,8 5,3" stroke-width="1.6"/></g>`;
+  },
+
+  projector: () => {
+    const bars = [[24, 14, 0], [34, 22, 0.3], [44, 10, 0.6]];
+    return `
+    <rect x="18" y="-72" width="40" height="34" ${FILL2}/>
+    ${bars.map(([x, h, d]) => `<rect class="bp-cell" style="animation-delay:${d}s" x="${x}" y="${-42 - h}" width="7" height="${h}" fill="${GOLD}" fill-opacity=".7" stroke="none"/>`).join("")}
+    <path d="M38,-38 L38,-28" stroke-width="1.5"/>
+    <path class="bp-flicker" d="M20,4 L18,-38 L58,-38 L20,16 Z" fill="${GOLD}" fill-opacity=".14" stroke="none"/>
+    <path d="M-40,28 L-44,54 M4,28 L8,54"/>
+    <rect x="-46" y="-6" width="56" height="34" rx="6" ${FILL}/>
+    <rect x="10" y="2" width="10" height="16" ${FILL2}/>
+    <g transform="translate(-34,-22)"><g>${spin("0;360", "2s")}<circle r="14" ${FILL2}/><path d="M-14,0 L14,0 M0,-14 L0,14" stroke-width="1.2"/></g></g>
+    <g transform="translate(-4,-20)"><g>${spin("0;360", "2s")}<circle r="11" ${FILL2}/><path d="M-11,0 L11,0 M0,-11 L0,11" stroke-width="1.2"/></g></g>`;
+  },
+
+  lasso: () => `
+    <rect x="20" y="0" width="14" height="54" ${FILL2}/>
+    <path d="M14,54 L40,54" stroke-width="4"/>
+    <path d="M27,0 C20,-24 0,-34 -10,-40" stroke="${GOLD}" stroke-width="2"/>
+    <g transform="translate(-14,-52)"><g>${spin("0;360", "1.4s")}
+      <ellipse rx="30" ry="12" stroke="${GOLD}" stroke-width="2.4">${anim("ry", "10;16;10", "1.4s")}</ellipse>
+    </g></g>
+    <path d="M-30,32 L20,18" stroke="${GOLD}" stroke-dasharray="3 3"/>
+    <g class="bp-suck"><rect x="-56" y="22" width="14" height="18" ${FILL2}/><rect x="-44" y="30" width="14" height="18" ${FILL2}/></g>`,
+
+  mixer: () => `
+    <path d="M-50,46 L30,46 L30,38 L-50,38 Z" ${FILL2}/>
+    <rect x="8" y="-30" width="14" height="68" ${FILL}/>
+    <rect x="-48" y="-52" width="70" height="24" rx="12" ${FILL}/>
+    <circle cx="10" cy="-40" r="3" fill="${GOLD}" stroke="none" class="bp-flicker"/>
+    <g class="bp-fall" fill="${GOLD}" stroke="none"><circle cx="-36" cy="-16" r="2.2"/><rect x="-28" y="-12" width="4" height="4"/><circle cx="-8" cy="-14" r="2"/></g>
+    <g transform="translate(-18,-28)"><g>${spin("-15;15;-15", "0.4s")}<path d="M0,0 L0,18 M-8,18 C-8,36 8,36 8,18 Z"/></g></g>
+    <path d="M-48,4 L12,4 C10,30 -4,38 -18,38 C-32,38 -46,30 -48,4 Z" ${FILL2}/>
+    <path class="bp-flow" d="M-40,14 C-30,8 -10,20 4,12" stroke="${GOLD}" stroke-dasharray="4 4"/>`,
+
+  boomerang: () => `
+    <ellipse cx="0" cy="-30" rx="48" ry="30" stroke="${GOLD}" stroke-dasharray="3 6" stroke-opacity=".6"/>
+    <rect x="-16" y="24" width="32" height="28" ${FILL2}/>
+    <path d="M-26,54 L26,54" stroke-width="4"/>
+    <rect x="-10" y="8" width="20" height="14" ${FILL}/>
+    <path d="M-10,8 L0,16 L10,8" stroke-width="1.2"/>
+    <g>${motion ? `<animateMotion dur="2.4s" repeatCount="indefinite" path="M0,0 C64,0 64,-60 0,-60 C-64,-60 -64,0 0,0"/>` : ""}
+      <g>${spin("0;360", "0.5s")}<path d="M-14,4 L0,-10 L14,4 L10,8 L0,-2 L-10,8 Z" fill="${GOLD}" fill-opacity=".6" stroke="${GOLD}"/></g>
+    </g>`,
+
+  dominoes: () => {
+    const tiles = Array.from({ length: 5 }, (_, i) => {
+      const x = -44 + i * 22, start = 0.1 + i * 0.1, angle = i === 4 ? 80 : 22;
+      return `<g transform="translate(${x + 8},50)"><g>${spin(`0;0;${angle};${angle};0`, "4s", `keyTimes="0;${start.toFixed(2)};${(start + 0.08).toFixed(2)};0.9;1"`)}
+        <rect x="-8" y="-48" width="8" height="48" rx="1.5" ${FILL2}/>
+        <path d="M-8,-24 L0,-24" stroke-width="1"/>
+        <circle cx="-4" cy="-36" r="1.4" fill="${LINE}" stroke="none"/><circle cx="-4" cy="-12" r="1.4" fill="${LINE}" stroke="none"/>
+      </g></g>`;
+    }).join("");
+    return `
+    <path d="M-60,-30 L-46,-4" stroke-width="3"/>
+    <circle cx="-50" cy="-14" r="5" fill="${GOLD}" stroke="none"/>
+    <path d="M-58,52 L60,52" stroke-width="3"/>
+    ${tiles}
+    ${star(52, -36, 7)}`;
+  },
 };
 
 // Vertical offsets for each machine shape, as a function of position t (0 = first part, 1 = last).
@@ -482,7 +857,10 @@ const LAYOUTS = {
 };
 
 // Where a part's base sits, for parts that stop short of the usual y = 54.
-const BASES = { hopper: 42, magnet: 46, scanner: 48, gears: 46, sorter: 44, "gift-wrapper": 44, bell: 30, rocket: 32, stamp: 50 };
+const BASES = {
+  hopper: 42, magnet: 46, scanner: 48, gears: 46, sorter: 44, "gift-wrapper": 44, bell: 30, rocket: 32, stamp: 50,
+  sleigh: 32, snowplow: 46, "cookie-cutter": 44, typewriter: 42, "piggy-bank": 50, "tag-gun": 40, toaster: 50,
+};
 
 const IDLE = ["bp-idle-bounce", "bp-idle-wobble", "bp-idle-chug", "bp-idle-jitter"];
 const FITTINGS = ["", "", "gauge", "valve", "light", "steam"];

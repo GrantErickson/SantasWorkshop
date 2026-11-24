@@ -14,6 +14,7 @@ let master, sfxBus, musicBus, noiseBuf;
 let prefs = { sound: true, music: true };
 let prefKey = "sw-sound";
 let musicWanted = false;
+let musicHushed = false;
 let musicOpts = { playlist: [] };
 let music = null;
 const listeners = new Set();
@@ -87,7 +88,7 @@ function ensure() {
   sfxBus.gain.value = SFX_LEVEL;
   sfxBus.connect(master);
   musicBus = ctx.createGain();
-  musicBus.gain.value = prefs.music ? MUSIC_LEVEL : 0;
+  musicBus.gain.value = musicLevel();
   musicBus.connect(master);
   ctx.onstatechange = notify;
   return ctx;
@@ -113,20 +114,31 @@ function toggle(name) {
     const now = ctx.currentTime;
     master.gain.setTargetAtTime(prefs.sound ? MASTER_LEVEL : 0, now, 0.05);
     musicBus.gain.cancelScheduledValues(now);
-    musicBus.gain.setTargetAtTime(prefs.music ? MUSIC_LEVEL : 0, now, 0.05);
+    musicBus.gain.setTargetAtTime(musicLevel(), now, 0.05);
   }
   notify();
 }
 
+const musicLevel = () => (prefs.music && !musicHushed ? MUSIC_LEVEL : 0);
+
 /** Turns the music down while sound effects play, then brings it back. */
 function duck(seconds) {
-  if (!ctx || !prefs.music) return;
+  if (!ctx || !prefs.music || musicHushed) return;
   const g = musicBus.gain, now = ctx.currentTime;
   g.cancelScheduledValues(now);
   g.setValueAtTime(g.value, now);
   g.linearRampToValueAtTime(MUSIC_LEVEL * 0.3, now + 0.15);
   g.setValueAtTime(MUSIC_LEVEL * 0.3, now + seconds);
   g.linearRampToValueAtTime(MUSIC_LEVEL, now + seconds + 0.8);
+}
+
+/** Silences the music (e.g. while the microphone is listening) until called again with false. */
+export function hushMusic(on) {
+  musicHushed = on;
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  musicBus.gain.cancelScheduledValues(now);
+  musicBus.gain.setTargetAtTime(musicLevel(), now, on ? 0.08 : 0.4);
 }
 
 // ---- Synth building blocks ------------------------------------------------------------------
@@ -313,6 +325,11 @@ const PART_SOUND = {
   mailbox: "ding", calculator: "bleep", clock: "ratchet", "crystal-ball": "sparkle", lightbulb: "zap",
   "elf-wheel": "ratchet", catapult: "boing", crane: "servo", vacuum: "whoosh", "filing-cabinet": "clank",
   "tesla-coil": "zap", telescope: "bleep", chatbot: "bleep", "helper-bot": "bleep", spreadsheet: "bleep", vault: "ratchet",
+  sleigh: "sparkle", snowplow: "grind", "cookie-cutter": "thump", sieve: "ratchet", phonograph: "ding", typewriter: "ratchet",
+  scale: "clank", radar: "bleep", switchboard: "bleep", "piggy-bank": "ding", compass: "servo", "tag-gun": "clank",
+  clipboard: "bleep", "sewing-machine": "ratchet", eraser: "whoosh", keyring: "sparkle", globe: "servo", megaphone: "boing",
+  camera: "zap", "paper-plane": "whoosh", jigsaw: "clank", gumball: "blub", "fishing-rod": "boing", toaster: "boing",
+  thermometer: "blub", projector: "ratchet", lasso: "whoosh", mixer: "grind", boomerang: "whoosh", dominoes: "ratchet",
 };
 
 /** Plays a named sound effect now. */
@@ -350,11 +367,11 @@ export function startMachine(kinds, svg, { delay = 0.5, gap = 0.45 } = {}) {
 // Recorded carols in /audio (sources and licenses in /audio/CREDITS.txt). They stream through the music bus, so the
 // sound and music toggles and the ducking under sound effects still apply.
 
-// All files are evened out to the same loudness (-16 LUFS). lively = seconds in where a quick listen should start.
+// All files are evened out to the same loudness (-16 LUFS).
 const MACLEOD = { by: "Kevin MacLeod (incompetech.com)", license: "CC BY 4.0" };
 const TRACKS = {
   "jingle-bells": { title: "Jingle Bells", ...MACLEOD, upbeat: true },
-  "we-wish-you": { title: "We Wish You a Merry Christmas", ...MACLEOD, upbeat: true, lively: 34.5 },
+  "we-wish-you": { title: "We Wish You a Merry Christmas", ...MACLEOD, upbeat: true },
   "deck-the-halls": { title: "Deck the Halls", ...MACLEOD, upbeat: true },
   "up-on-a-housetop": { title: "Up on a Housetop", ...MACLEOD, upbeat: true },
   "joy-to-the-world": { title: "Joy to the World", by: "United States Marine Band", upbeat: true },
@@ -384,12 +401,11 @@ function announce(track) {
 /**
  * Plays music for as long as the page wants it (and the music setting is on).
  * @param playlist  track ids; played in a fresh random order each time round when shuffle is on
- * @param lively    start the first track at its liveliest point (the kiosk only plays a few seconds while the elves work)
  * @param upbeat    only the upbeat tracks
  */
-export function startMusic({ playlist = ALL_TRACKS, shuffle = true, lively = false, upbeat = false } = {}) {
+export function startMusic({ playlist = ALL_TRACKS, shuffle = true, upbeat = false } = {}) {
   musicWanted = true;
-  musicOpts = { playlist: upbeat ? playlist.filter((id) => TRACKS[id].upbeat) : playlist, shuffle, lively };
+  musicOpts = { playlist: upbeat ? playlist.filter((id) => TRACKS[id].upbeat) : playlist, shuffle };
   ensure();
   syncMusic();
 }
@@ -411,10 +427,10 @@ function beginMusic() {
   out.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 1.2);
   out.connect(musicBus);
   music = { out, queue: [], player: null, misses: 0, last: null, gap: 0 };
-  playNext(music, musicOpts.lively);
+  playNext(music);
 }
 
-function playNext(m, lively = false) {
+function playNext(m) {
   if (music !== m) return;
   if (m.queue.length === 0) m.queue = musicOpts.shuffle ? shuffled(musicOpts.playlist, m.last) : [...musicOpts.playlist];
   const id = m.queue.shift();
@@ -423,9 +439,7 @@ function playNext(m, lively = false) {
 
   const el = new Audio();
   el.preload = "auto";
-  // A media fragment (#t=) starts playback part-way in.
-  const src = `/audio/${id}.mp3`;
-  el.src = lively && track.lively ? `${src}#t=${track.lively}` : src;
+  el.src = `/audio/${id}.mp3`;
   const node = ctx.createMediaElementSource(el);
   node.connect(m.out);
   const player = { el, node };

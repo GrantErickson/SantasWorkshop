@@ -246,27 +246,168 @@ public static class PicturePrompt
         ["helper-bot"] = "a friendly little round-headed robot helper",
         ["spreadsheet"] = "a big board of glowing tiles filling in row by row",
         ["vault"] = "a round steel vault door with a big wheel handle",
+        ["sleigh"] = "a little red sleigh piled high with finished parcels",
+        ["snowplow"] = "a chunky snowplow pushing a mountain of paperwork aside",
+        ["cookie-cutter"] = "a press stamping gingerbread-man cookie cutters into dough",
+        ["sieve"] = "a giant shaking sieve letting junk fall through",
+        ["phonograph"] = "an old brass phonograph with a big flared horn and musical notes floating out",
+        ["typewriter"] = "a vintage typewriter clacking out a page",
+        ["scale"] = "a brass balance scale weighing papers against gold stars",
+        ["radar"] = "a round radar screen with a sweeping green beam",
+        ["switchboard"] = "an old telephone switchboard with tangled patch cords",
+        ["piggy-bank"] = "a big porcelain piggy bank with coins dropping into it",
+        ["compass"] = "a large brass compass with a spinning needle",
+        ["tag-gun"] = "a price-tag gun firing out little tags",
+        ["clipboard"] = "a giant clipboard checklist with ticks appearing",
+        ["sewing-machine"] = "an antique sewing machine stitching ribbons of paper together",
+        ["eraser"] = "a huge pink eraser on a rail rubbing out scribbles",
+        ["keyring"] = "a big ring of jangling old-fashioned keys",
+        ["globe"] = "a spinning world globe with speech bubbles in different languages",
+        ["megaphone"] = "a red-and-white megaphone blasting out sound rings",
+        ["camera"] = "an old box camera on a tripod with a flash going off",
+        ["paper-plane"] = "a launcher firing a stream of paper airplanes",
+        ["jigsaw"] = "giant jigsaw puzzle pieces clicking into place",
+        ["gumball"] = "a gumball machine dispensing one shiny ball at a time",
+        ["fishing-rod"] = "a fishing rod hooking one document out of a sea of papers",
+        ["toaster"] = "a shiny chrome toaster popping out toast-shaped pages",
+        ["thermometer"] = "a tall thermometer with a smiley face at the top",
+        ["projector"] = "a reel-to-reel film projector beaming a chart onto a small screen",
+        ["lasso"] = "a spinning rope lasso rounding up runaway papers",
+        ["mixer"] = "a big stand mixer whisking ingredients in a bowl",
+        ["boomerang"] = "a boomerang looping out and back with an envelope",
+        ["dominoes"] = "a long chain of toppling dominoes",
     };
 
-    public static string For(Wish wish)
+    // Each picture draws one of each of these at random, so a wall full of machines doesn't look like one painting
+    // repeated, and Repaint gives a fresh take rather than the same picture again.
+    private static readonly string[] Styles =
+    [
+        "a cozy storybook watercolor illustration with loose ink lines and soft washes of color",
+        "a handmade stop-motion claymation diorama, with thumbprints in the clay and felt and yarn details",
+        "a 1950s mid-century cartoon illustration with bold flat shapes, a limited retro palette and atomic-age flair",
+        "a layered cut-paper diorama lit from behind, with visible paper edges and soft shadows between the layers",
+        "a polished 3D animated-film still with soft glowing light and expressive, bouncy characters",
+        "a tilt-shift photo of a tiny handmade miniature set on a tabletop, with shallow depth of field",
+        "a glowing stained-glass window with rich jewel colors and dark lead lines",
+        "a cozy knitted and felted wool craft scene with visible stitches and fuzzy textures",
+        "a detailed, colorful 16-bit pixel-art scene",
+        "a vintage gouache Christmas card illustration with a slightly faded, grainy print texture",
+        "a Japanese woodblock print with flat colors, flowing lines and patterned snow",
+        "a sculpture made entirely of gingerbread, royal icing, gumdrops and boiled sweets",
+        "a sleek art deco illustration with bold geometric shapes, sweeping curves and metallic gold",
+        "a children's picture book drawn in chunky crayon and colored pencil",
+        "a hand-tinted Victorian engraving with fine cross-hatching and delicate pastel tints",
+        "a richly detailed oil painting with thick, buttery brushstrokes",
+    ];
+
+    private static readonly string[] Settings =
+    [
+        "inside Santa's bustling workshop among piles of half-built toys",
+        "out on a frozen lake under the northern lights",
+        "on a snowy rooftop next to Santa's parked sleigh",
+        "inside a giant snow globe",
+        "in the reindeer stables, with curious reindeer poking their noses in",
+        "in a glittering cavern of glowing blue ice crystals deep beneath the North Pole",
+        "aboard a patchwork airship drifting above snowy mountains",
+        "in a cozy elf office full of desks, overflowing in-trays and potted poinsettias",
+        "in the main street of a gingerbread village during a snowy festival",
+        "in Santa's mailroom, buried in mountains of letters",
+        "in a candy-cane forest at dusk",
+        "in an elf laboratory full of bubbling flasks and blinking dials",
+        "on a toy train winding through snowy pine hills",
+        "on an ice floe, watched by puzzled polar bears and arctic foxes",
+        "in a grand hall with a towering, twinkling Christmas tree",
+    ];
+
+    private static readonly string[] Shapes =
+    [
+        "sprawling across the whole scene in loops, detours and pointless switchbacks",
+        "stacked into a tall, wobbly tower that nearly touches the sky",
+        "built into a giant flying sleigh",
+        "striding along on big clanking mechanical legs",
+        "spiraling up and around a Christmas tree",
+        "curling into a giant loop like a roller coaster",
+        "hanging from above like an enormous mobile",
+        "squeezed into one compact contraption bristling with far too many gadgets",
+        "disguised as a huge gingerbread house",
+        "shaped like an enormous friendly animal, such as a reindeer, a walrus or a snowy owl",
+        "spread out like a busy little factory town with its own tiny roads",
+        "balanced on a teetering seesaw of crates and presents",
+    ];
+
+    private static readonly string[] Moments =
+    [
+        "It's the very first test run, and the elves cheer as it sputters to life.",
+        "Something has just gone comically wrong: a spring has popped loose and one elf is clinging on for dear life.",
+        "A proud elf is showing it off to a delighted Santa.",
+        "Elves are riding on it as it works, waving and whooping.",
+        "It's the busiest rush of the year, and elves are sprinting to keep up with it.",
+        "It's the quiet night shift: one sleepy elf with a mug of cocoa watches it hum along.",
+        "A reindeer has wandered in and is very curious about one of the buttons.",
+        "The job is done and the elves are celebrating with confetti and streamers.",
+        "Elves are mid-repair, with wrenches, ladders and one elf upside-down inside a panel.",
+        "An elf conductor is directing it like an orchestra with a candy-cane baton.",
+    ];
+
+    private static readonly string[] Views =
+    [
+        "a wide side-on view showing the whole machine",
+        "a cutaway cross-section view showing the insides at work",
+        "a dramatic low angle looking up at the machine",
+        "a high bird's-eye view looking down",
+        "a cozy three-quarter view with the elves in the foreground",
+    ];
+
+    private static readonly string[] Lights =
+    [
+        "warm candlelight and lantern glow",
+        "crisp, sparkling blue winter morning light",
+        "the green and violet glow of the aurora",
+        "golden late-afternoon sunlight",
+        "a swirling snowstorm lit by strings of fairy lights",
+        "a starry night lit by glowing windows and lanterns",
+        "soft pastel dawn light",
+    ];
+
+    private static readonly string[] Links =
+    [
+        "brass pipes and little conveyor belts",
+        "pneumatic tubes whooshing items along",
+        "zip lines with dangling baskets",
+        "slides, chutes and twisty ribbon tracks",
+        "candy-cane pipes and spinning pinwheels",
+        "toy train tracks and tiny tipping carts",
+        "ropes, pulleys and swinging buckets",
+        "dominoes, marbles and bouncing balls in a chain reaction",
+    ];
+
+    public static string For(Wish wish, Random? random = null)
     {
+        random ??= Random.Shared;
+        string Pick(string[] options) => options[random.Next(options.Length)];
+
         var parts = wish.Blueprint.Modules
             .Select(m => Looks.GetValueOrDefault(m.Kind))
             .Where(look => look is not null)
             .ToList();
 
         var prompt = new StringBuilder();
-        prompt.Append("A whimsical, cozy storybook illustration of a wonderfully over-engineered chain-reaction machine ");
-        prompt.Append("that Santa's elves built in their North Pole workshop.");
+        prompt.Append($"{Capitalize(Pick(Styles))}, showing a wonderfully inventive, over-engineered machine that Santa's elves ");
+        prompt.Append($"built, set {Pick(Settings)}. The machine is {Pick(Shapes)}.");
         // Claude's wall text is anonymized and checked; the offline backup elf's is the guest's own words, so leave it out.
+        // (The machine's name and tagline stay out too: quoted names tempt image models into painting signs.)
         if (wish.Source == "claude" && !string.IsNullOrWhiteSpace(wish.WallText))
             prompt.Append($" The machine's job is to {wish.WallText.Trim().TrimEnd('…', '.')}.");
         if (parts.Count > 0)
-            prompt.Append($" From left to right it is built from {string.Join("; then ", parts)}, all linked together by brass pipes and little conveyor belts.");
-        prompt.Append(" A few cheerful elves in red and green tend the machine. Warm glowing lanterns, twinkling fairy lights, ");
-        prompt.Append("wooden beams hung with garlands, shelves of toys, and snow falling past a frosted window. Rich jewel-tone colors ");
-        prompt.Append("with lots of gold, soft painterly texture, playful charming details, a wide view showing the whole machine. ");
-        prompt.Append("Friendly and family-safe. No text anywhere: no letters, words, numbers, labels, signs or logos.");
+        {
+            prompt.Append($" Its parts include {string.Join("; ", parts)}, linked together by {Pick(Links)}.");
+            prompt.Append(" Reimagine each part in a surprising, witty way, and add a few contraptions and sight gags of your own.");
+        }
+        prompt.Append($" {Pick(Moments)} The elves are a lively mix of ages, shapes and colorful outfits.");
+        prompt.Append($" The scene is lit by {Pick(Lights)}. Composition: {Pick(Views)}. Full of charming little details to discover.");
+        prompt.Append(" Friendly and family-safe. No text anywhere: no letters, words, numbers, labels, signs or logos.");
         return prompt.ToString();
     }
+
+    private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
 }
