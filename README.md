@@ -141,8 +141,10 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
    On an iPad, *Share → Add to Home Screen* gives a full-screen kiosk. Turn on Guided Access to lock it in.
 3. Open `/wall` and `/counter` full screen (F11) on the TVs, then **click once on each one** to turn on sound.
    Browsers won't play audio until someone clicks, so each TV shows a "Click anywhere for sound" button until you do.
-   On the TVs, **S** toggles all sound and **M** toggles the wall's music. The kiosk has a speaker button in its top
-   corner, and its sound starts with the first guest's tap. If a screen stays silent, check Chrome hasn't muted the
+   On the TVs, **S** toggles all sound and **M** toggles the wall's music. The kiosk's speaker button (top corner)
+   opens a sound panel: music and sound effects each have an on/off button and a volume slider, so you can balance
+   them for the room, plus **Mute everything**. The kiosk remembers these settings. Its sound starts with the first
+   guest's tap. If a screen stays silent, check Chrome hasn't muted the
    site (right-click the tab → *Unmute site*). On an older iPad (before iPadOS 16.4), check the silent switch is off.
 4. Make one wish, scan its QR code with your own phone, and submit the opt-in form to test the whole loop.
    Then hide that test wish in admin so it isn't on the wall.

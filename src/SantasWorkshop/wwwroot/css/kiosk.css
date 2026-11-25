@@ -111,7 +111,8 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 .k-fine { color: var(--muted); font-size: .9rem; margin-top: 1em; }
 
 /* Working */
-.k-gears { width: 15rem; height: auto; }
+.k-machine { width: min(34rem, 90vw); }
+.k-machine svg { display: block; width: 100%; height: auto; max-height: 42vh; margin: 0 auto; }
 .k-working-title { font-size: 3.6rem; margin: .4em 0 .2em; }
 .k-working-msg { font-size: 1.4rem; color: var(--frost); min-height: 1.5em; margin: 0 0 1em; }
 .k-working-msg.fresh { animation: msg-in .45s ease both; }
@@ -119,6 +120,59 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } }
 
 @media (prefers-reduced-motion: reduce) { .k-working-msg.fresh { animation: none; } }
+
+/* The Elf-o-Tron 9000 (js/thinking-machine.js). Rotating parts are drawn around their own pivot at (0, 0). */
+.tm-sig { stroke-dasharray: .22 1.6; stroke-dashoffset: .22; animation: tm-sig 3.2s linear infinite; }
+@keyframes tm-sig { 0% { stroke-dashoffset: .22; } 27%, 100% { stroke-dashoffset: -1; } }
+.tm-flash { opacity: 0; animation: tm-flash 3.2s ease-out infinite; }
+@keyframes tm-flash { 0% { opacity: 1; } 28%, 100% { opacity: 0; } }
+.tm-lamps circle { animation: tm-blink 1s steps(1, end) infinite; }
+@keyframes tm-blink { 50% { opacity: .15; } }
+.tm-glow { animation: tm-glow 1.3s ease-in-out infinite alternate; }
+@keyframes tm-glow { from { opacity: .25; } to { opacity: .9; } }
+.tm-reel { animation: tm-reel 2.6s ease-in-out infinite; }
+.tm-reel.rev { animation-name: tm-reel-rev; }
+@keyframes tm-reel { 30%, 42% { transform: rotate(150deg); } 78% { transform: rotate(320deg); } 100% { transform: rotate(360deg); } }
+@keyframes tm-reel-rev { 30%, 42% { transform: rotate(-150deg); } 78% { transform: rotate(-320deg); } 100% { transform: rotate(-360deg); } }
+.tm-roll { animation: tm-roll .5s linear infinite; }
+@keyframes tm-roll { to { transform: rotate(360deg); } }
+.tm-env { opacity: 0; animation: tm-env 2.6s linear infinite; }
+.tm-env.second { animation-delay: -1.3s; }
+@keyframes tm-env {
+  0% { transform: translateX(-26px); opacity: 0; }
+  12% { opacity: 1; }
+  80% { transform: translateX(68px); opacity: 1; }
+  81%, 100% { transform: translateX(68px); opacity: 0; }
+}
+.tm-needle { animation: tm-needle 3.6s ease-in-out infinite; }
+@keyframes tm-needle {
+  0%, 100% { transform: rotate(-95deg); } 22% { transform: rotate(40deg); } 34% { transform: rotate(15deg); }
+  56% { transform: rotate(118deg); } 64% { transform: rotate(102deg); } 82% { transform: rotate(-30deg); }
+}
+.tm-lever { animation: tm-lever 4.2s ease-in-out infinite; }
+@keyframes tm-lever { 0%, 42%, 100% { transform: rotate(-28deg); } 52%, 92% { transform: rotate(28deg); } }
+.tm-bell { animation: tm-bell 1.1s ease-in-out infinite alternate; }
+@keyframes tm-bell { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+.tm-star { animation: tm-star 1.6s ease-in-out infinite; }
+@keyframes tm-star { 50% { transform: scale(1.25) rotate(12deg); opacity: .75; } }
+.tm-radio { opacity: 0; animation: tm-radio 1.6s ease-out infinite; }
+.tm-radio.far { animation-delay: .35s; }
+@keyframes tm-radio { 25% { opacity: 1; } 70%, 100% { opacity: 0; } }
+.tm-scan { animation: tm-scan 2.4s linear infinite; }
+@keyframes tm-scan { to { transform: translateY(92px); } }
+.tm-plan { animation: tm-plan 2.6s linear infinite; animation-delay: -.65s; }
+.tm-plan.second { animation-delay: -1.95s; }
+@keyframes tm-plan {
+  0% { transform: translateX(-46px); opacity: 1; }
+  72% { transform: translateX(42px); opacity: 1; }
+  86%, 100% { transform: translateX(54px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm * { animation: none !important; }
+  .tm-env.second, .tm-plan.second { display: none; }
+  .tm-env { opacity: 1; }
+}
 
 .k-progress {
   width: min(28rem, 80%);

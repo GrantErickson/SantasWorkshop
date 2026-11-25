@@ -8,10 +8,12 @@ const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const MASTER_LEVEL = 0.9;
 const MUSIC_LEVEL = 0.32;
 const SFX_LEVEL = 0.75;
+const NORMAL_VOLUME = 70; // the kiosk's volume sliders run 0–100; 70 plays at the levels above, 100 about twice as loud
 
 let ctx = null;
 let master, sfxBus, musicBus, noiseBuf;
-let prefs = { sound: true, music: true };
+const DEFAULT_PREFS = { sound: true, music: true, fx: true, musicVolume: NORMAL_VOLUME, fxVolume: NORMAL_VOLUME };
+let prefs = { ...DEFAULT_PREFS };
 let prefKey = "sw-sound";
 let musicWanted = false;
 let musicHushed = false;
@@ -19,17 +21,17 @@ let musicOpts = { playlist: [] };
 let music = null;
 const listeners = new Set();
 
-// ---- Setup, unlocking and the on-screen toggles ------------------------------------------
+// ---- Setup, unlocking and the on-screen controls ------------------------------------------
 
 /**
  * Turns sound on for a page and adds its controls.
  * @param page         name used to remember this screen's settings
- * @param mount        element to put a single mute button in (kiosk); omit for the TV corner controls
+ * @param mount        element to put the speaker button and its sound panel in (kiosk); omit for the TV corner controls
  * @param musicButton  show a separate music toggle (TV corner controls only)
  */
 export function setUpSound({ page, mount = null, musicButton = false }) {
   prefKey = `sw-sound-${page}`;
-  try { prefs = { ...prefs, ...JSON.parse(localStorage.getItem(prefKey) || "{}") }; } catch { /* private mode */ }
+  prefs = loadPrefs();
   if (!AudioCtx) return;
 
   for (const type of ["pointerdown", "touchend", "click", "keydown"]) {
@@ -39,9 +41,39 @@ export function setUpSound({ page, mount = null, musicButton = false }) {
   const box = document.createElement("div");
   box.className = mount ? "sound-ctl sound-ctl-inline" : "sound-ctl";
   (mount || document.body).appendChild(box);
+  const render = mount ? soundPanel(box) : cornerButtons(box, musicButton);
+  listeners.add(render);
+  render();
+}
+
+function loadPrefs() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(prefKey) || "{}") || {}; } catch { /* private mode */ }
+  const out = { ...DEFAULT_PREFS };
+  for (const key of ["sound", "music", "fx"]) if (typeof saved[key] === "boolean") out[key] = saved[key];
+  for (const key of ["musicVolume", "fxVolume"]) {
+    if (Number.isFinite(saved[key])) out[key] = Math.min(100, Math.max(0, Math.round(saved[key])));
+  }
+  return out;
+}
+
+function savePrefs() {
+  try { localStorage.setItem(prefKey, JSON.stringify(prefs)); } catch { /* private mode */ }
+}
+
+/** The TVs: a sound button (and the wall's music button) that staff click, or press S / M for. */
+function cornerButtons(box, musicButton) {
   let layout = "";
-  const render = () => {
-    const locked = !mount && !running();
+  addEventListener("keydown", (e) => {
+    if (e.key === "s" || e.key === "S") toggle("sound");
+    if ((e.key === "m" || e.key === "M") && musicButton) toggle("music");
+  });
+  box.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-pref]");
+    if (btn) toggle(btn.dataset.pref);
+  });
+  return () => {
+    const locked = !running();
     box.classList.toggle("locked", locked);
     if (layout !== (locked ? "locked" : "buttons")) {
       layout = locked ? "locked" : "buttons";
@@ -57,22 +89,100 @@ export function setUpSound({ page, mount = null, musicButton = false }) {
       const on = prefs[name];
       btn.classList.toggle("off", !on);
       btn.setAttribute("aria-pressed", String(on));
-      btn.title = `${name === "sound" ? "Sound" : "Music"} ${on ? "on" : "off"}${mount ? "" : name === "sound" ? " (S)" : " (M)"}`;
+      btn.title = `${name === "sound" ? "Sound" : "Music"} ${on ? "on" : "off"} (${name === "sound" ? "S" : "M"})`;
       if (name === "sound") btn.textContent = on ? "🔊" : "🔇";
     }
   };
-  box.addEventListener("click", (e) => {
+}
+
+const PANEL_IDLE_SECONDS = 20; // the kiosk's sound panel closes itself if left open
+
+/**
+ * The kiosk: a speaker button that opens a small sound panel, with music and sound effects each switched on or off
+ * and turned up or down separately, plus a button that mutes everything.
+ */
+function soundPanel(box) {
+  box.innerHTML = `
+    <button type="button" class="sound-btn" data-open aria-haspopup="dialog" aria-expanded="false" aria-label="Sound settings" title="Sound settings"></button>
+    <div class="sound-panel" role="dialog" aria-label="Sound settings" hidden>
+      <div class="sp-head"><b>Sound</b><button type="button" class="sp-close" aria-label="Close">✕</button></div>
+      <div class="sp-row" data-row="music">
+        <button type="button" class="sp-toggle" data-pref="music"></button>
+        <input type="range" min="0" max="100" step="1" data-level="musicVolume" aria-label="Music volume">
+      </div>
+      <div class="sp-row" data-row="fx">
+        <button type="button" class="sp-toggle" data-pref="fx"></button>
+        <input type="range" min="0" max="100" step="1" data-level="fxVolume" aria-label="Sound effects volume">
+      </div>
+      <button type="button" class="sp-all" data-pref="sound"></button>
+    </div>`;
+  const opener = box.querySelector("[data-open]");
+  const panel = box.querySelector(".sound-panel");
+  let idle = 0;
+  const keepOpen = () => {
+    clearTimeout(idle);
+    idle = setTimeout(close, PANEL_IDLE_SECONDS * 1000);
+  };
+  const open = () => {
+    panel.hidden = false;
+    opener.setAttribute("aria-expanded", "true");
+    keepOpen();
+  };
+  function close() {
+    clearTimeout(idle);
+    panel.hidden = true;
+    opener.setAttribute("aria-expanded", "false");
+  }
+
+  opener.addEventListener("click", () => (panel.hidden ? open() : close()));
+  box.querySelector(".sp-close").addEventListener("click", close);
+  document.addEventListener("pointerdown", (e) => { if (!panel.hidden && !box.contains(e.target)) close(); }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) close(); });
+  panel.addEventListener("pointerdown", keepOpen);
+  panel.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-pref]");
     if (btn) toggle(btn.dataset.pref);
   });
-  if (!mount) {
-    addEventListener("keydown", (e) => {
-      if (e.key === "s" || e.key === "S") toggle("sound");
-      if ((e.key === "m" || e.key === "M") && musicButton) toggle("music");
-    });
-  }
-  listeners.add(render);
-  render();
+  panel.addEventListener("input", (e) => {
+    const name = e.target.dataset.level;
+    if (!name) return;
+    keepOpen();
+    prefs[name] = Number(e.target.value);
+    // Moving a slider means they want to hear it: switch that one (and the sound overall) back on.
+    if (name === "musicVolume") prefs.music = true;
+    if (name === "fxVolume") prefs.fx = true;
+    prefs.sound = true;
+    applyLevels(0.03);
+    notify();
+  });
+  panel.addEventListener("change", (e) => {
+    if (!e.target.dataset.level) return;
+    savePrefs();
+    if (e.target.dataset.level === "fxVolume") sfx("tap"); // a sample at the new level
+  });
+
+  const LABELS = { music: "🎵 Music", fx: "🔔 Effects" };
+  return () => {
+    const silent = !prefs.sound || (!prefs.music && !prefs.fx);
+    opener.textContent = silent ? "🔇" : "🔊";
+    opener.classList.toggle("off", silent);
+    for (const name of ["music", "fx"]) {
+      const on = prefs[name];
+      const btn = panel.querySelector(`[data-pref="${name}"]`);
+      btn.textContent = `${LABELS[name]} ${on ? "on" : "off"}`;
+      btn.classList.toggle("off", !on);
+      btn.setAttribute("aria-pressed", String(on));
+      const volume = prefs[`${name}Volume`];
+      const slider = panel.querySelector(`[data-level="${name}Volume"]`);
+      slider.value = String(volume);
+      slider.style.setProperty("--fill", `${volume}%`);
+      panel.querySelector(`[data-row="${name}"]`).classList.toggle("dim", !on || !prefs.sound);
+    }
+    const all = panel.querySelector("[data-pref='sound']");
+    all.textContent = prefs.sound ? "🔇 Mute everything" : "🔊 Turn sound back on";
+    all.classList.toggle("off", !prefs.sound);
+    all.setAttribute("aria-pressed", String(!prefs.sound));
+  };
 }
 
 function ensure() {
@@ -85,7 +195,7 @@ function ensure() {
   master.gain.value = prefs.sound ? MASTER_LEVEL : 0;
   master.connect(limiter).connect(ctx.destination);
   sfxBus = ctx.createGain();
-  sfxBus.gain.value = SFX_LEVEL;
+  sfxBus.gain.value = fxLevel();
   sfxBus.connect(master);
   musicBus = ctx.createGain();
   musicBus.gain.value = musicLevel();
@@ -100,7 +210,7 @@ function unlock() {
 }
 
 const running = () => !!ctx && ctx.state === "running";
-const audible = () => running() && prefs.sound;
+const audible = () => running() && prefs.sound && prefs.fx; // for the sound effects
 
 function notify() {
   for (const fn of listeners) fn();
@@ -109,27 +219,36 @@ function notify() {
 
 function toggle(name) {
   prefs[name] = !prefs[name];
-  try { localStorage.setItem(prefKey, JSON.stringify(prefs)); } catch { /* private mode */ }
-  if (ctx) {
-    const now = ctx.currentTime;
-    master.gain.setTargetAtTime(prefs.sound ? MASTER_LEVEL : 0, now, 0.05);
-    musicBus.gain.cancelScheduledValues(now);
-    musicBus.gain.setTargetAtTime(musicLevel(), now, 0.05);
-  }
+  savePrefs();
+  applyLevels();
   notify();
 }
 
-const musicLevel = () => (prefs.music && !musicHushed ? MUSIC_LEVEL : 0);
+// Slider position to gain: squared, so equal slider moves sound like equal steps.
+const loudness = (volume) => (volume / NORMAL_VOLUME) ** 2;
+const musicLevel = () => (prefs.music && !musicHushed ? MUSIC_LEVEL * loudness(prefs.musicVolume) : 0);
+const fxLevel = () => (prefs.fx ? SFX_LEVEL * loudness(prefs.fxVolume) : 0);
+
+/** Moves every level to match the settings, gliding there over about `glide` seconds. */
+function applyLevels(glide = 0.05) {
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  for (const [bus, level] of [[master, prefs.sound ? MASTER_LEVEL : 0], [sfxBus, fxLevel()], [musicBus, musicLevel()]]) {
+    bus.gain.cancelScheduledValues(now);
+    bus.gain.setTargetAtTime(level, now, glide);
+  }
+}
 
 /** Turns the music down while sound effects play, then brings it back. */
 function duck(seconds) {
   if (!ctx || !prefs.music || musicHushed) return;
+  const level = musicLevel();
   const g = musicBus.gain, now = ctx.currentTime;
   g.cancelScheduledValues(now);
   g.setValueAtTime(g.value, now);
-  g.linearRampToValueAtTime(MUSIC_LEVEL * 0.3, now + 0.15);
-  g.setValueAtTime(MUSIC_LEVEL * 0.3, now + seconds);
-  g.linearRampToValueAtTime(MUSIC_LEVEL, now + seconds + 0.8);
+  g.linearRampToValueAtTime(level * 0.3, now + 0.15);
+  g.setValueAtTime(level * 0.3, now + seconds);
+  g.linearRampToValueAtTime(level, now + seconds + 0.8);
 }
 
 /** Silences the music (e.g. while the microphone is listening) until called again with false. */

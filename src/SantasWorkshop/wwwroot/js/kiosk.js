@@ -1,5 +1,6 @@
 import { $, $$, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
-import { gear, renderBlueprint } from "./blueprint.js";
+import { renderBlueprint } from "./blueprint.js";
+import { thinkingMachine } from "./thinking-machine.js";
 import { hushMusic, setUpSound, sfx, showNowPlaying, startMachine, startMusic } from "./sound.js";
 import { makeFlip, waitForPicture } from "./picture.js";
 
@@ -90,9 +91,6 @@ init();
 
 async function init() {
   snow($("#snow"));
-  $("#gearBig").innerHTML = gear(40, 12, 10);
-  $("#gearSmall").innerHTML = gear(22, 9, 7);
-  $("#gearTiny").innerHTML = gear(14, 7, 6);
 
   // ?key=... arrives once when staff open the kiosk; remember it and tidy the address bar.
   const params = new URLSearchParams(location.search);
@@ -199,6 +197,7 @@ let slowQueue = [];
 
 function animateWorking() {
   const start = performance.now();
+  $("#machine").innerHTML = thinkingMachine(); // fresh each time, so its belt starts empty and its lights differ
   const message = $("#workingMsg");
   const say = (text) => {
     message.textContent = text;

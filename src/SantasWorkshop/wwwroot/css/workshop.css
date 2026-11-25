@@ -399,10 +399,10 @@ button.chip:hover { background: rgba(255, 255, 255, .16); color: var(--snow); }
 .bp-part { transition: filter .2s ease; }
 .bp-part.bp-on { filter: drop-shadow(0 0 5px rgba(255, 210, 122, .95)) drop-shadow(0 0 14px rgba(255, 210, 122, .55)); }
 
-/* Sound controls (sound.js): a mute button on the kiosk, a small top-center cluster on the TVs. */
+/* Sound controls (sound.js): a speaker button and sound panel on the kiosk, a small top-center cluster on the TVs. */
 .sound-ctl { position: fixed; top: 2.4vh; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: .5rem; }
 .sound-ctl.locked { top: auto; bottom: 8vh; }
-.sound-ctl-inline { position: static; transform: none; }
+.sound-ctl-inline { position: relative; top: auto; left: auto; transform: none; z-index: 30; }
 .sound-btn, .sound-unlock {
   border: 1.5px solid rgba(255, 255, 255, .22);
   border-radius: 999px;
@@ -421,6 +421,72 @@ button.chip:hover { background: rgba(255, 255, 255, .16); color: var(--snow); }
 
 .sound-ctl-inline .sound-btn { opacity: 1; width: 2.9rem; height: 2.9rem; font-size: 1.3rem; touch-action: manipulation; }
 .sound-ctl-inline .sound-btn.off { background: rgba(200, 16, 46, .55); border-color: rgba(255, 179, 189, .6); }
+
+/* The kiosk's sound panel: music and effects each on/off with their own volume, and a mute-everything button. */
+.sound-panel {
+  position: absolute;
+  top: calc(100% + .6rem);
+  right: 0;
+  width: 21rem;
+  padding: .8rem 1rem 1rem;
+  border: 1.5px solid rgba(255, 255, 255, .2);
+  border-radius: var(--radius);
+  background: rgba(11, 29, 51, .97);
+  box-shadow: var(--shadow);
+  color: var(--snow);
+  text-align: left;
+  animation: fade-in .2s ease both;
+}
+.sound-panel[hidden] { display: none; }
+.sp-head { display: flex; align-items: center; justify-content: space-between; font-size: 1.1rem; margin-bottom: .3rem; }
+.sp-close { width: 2.6rem; height: 2.6rem; border: 0; background: none; color: var(--frost); font-size: 1.2rem; cursor: pointer; }
+.sp-row { display: grid; grid-template-columns: 8.6rem 1fr; align-items: center; gap: .9rem; margin: .45rem 0; }
+.sp-toggle, .sp-all {
+  font: inherit;
+  font-weight: 800;
+  font-size: .95rem;
+  white-space: nowrap;
+  color: var(--snow);
+  background: rgba(255, 255, 255, .1);
+  border: 1.5px solid rgba(255, 255, 255, .22);
+  border-radius: 999px;
+  padding: .55em .8em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.sp-toggle.off, .sp-all.off { background: rgba(200, 16, 46, .55); border-color: rgba(255, 179, 189, .6); }
+.sp-all { display: block; width: 100%; margin-top: .8rem; }
+.sp-row.dim input { opacity: .45; }
+.sound-panel input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2.6rem;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+.sound-panel input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--gold) var(--fill, 70%), rgba(255, 255, 255, .18) var(--fill, 70%));
+}
+.sound-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: var(--snow);
+  border: 3px solid var(--gold);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .4);
+}
+.sound-panel input[type="range"]::-moz-range-track { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .18); }
+.sound-panel input[type="range"]::-moz-range-progress { height: 8px; border-radius: 999px; background: var(--gold); }
+.sound-panel input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--snow); border: 3px solid var(--gold); }
+@media (prefers-reduced-motion: reduce) { .sound-panel { animation: none; } }
 .sound-unlock {
   padding: .55em 1.3em;
   font-weight: 800;
