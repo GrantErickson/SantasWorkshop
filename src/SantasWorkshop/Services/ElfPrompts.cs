@@ -30,10 +30,12 @@ public static class ElfPrompts
         - wallText: completes the sentence "I wish AI would …". Start lowercase, no ending punctuation, 3 to 8 words.
           Remove names of people and companies and anything else identifying. Example: "reconcile our invoices every month".
         - category: the best fit from the allowed list.
-        - practical.headline: one sentence of at most 25 words on how AI would handle it.
-        - practical.steps: exactly 3 steps of at most 18 words each, describing how the solution works.
+        - practical.headline: one sentence on how AI would handle it, at most 12 words and 80 characters, so it fits on
+          two short lines. Example: "AI matches invoices to your records and flags only the exceptions."
+        - practical.steps: exactly 3 steps describing how the solution works, each at most 8 words and 50 characters so
+          it fits on one short line. Example: "AI matches each invoice to its purchase order".
         - practical.techniques: 2 or 3 tags of at most 4 words each naming the AI techniques involved.
-        - practical.firstStep: one concrete pilot they could start in the next 30 days, at most 30 words.
+        - practical.firstStep: one concrete pilot they could start in the next 30 days, at most 18 words.
         - practical.hoursSavedPerYear: a realistic, conservative estimate of the hours a typical small team would get
           back per year after allowing for review time. Assume about 5 people do this task unless the wish says
           otherwise. A whole number, usually between 50 and 2000.

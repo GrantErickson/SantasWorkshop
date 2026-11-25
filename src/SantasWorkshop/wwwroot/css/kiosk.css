@@ -228,8 +228,10 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
    or on wide screens it spills over the wish above and the QR code below. Any width it gives up goes to the answer. */
 .r-grid .flip { flex: none; width: 59%; width: min(59%, 160cqh); }
 
-.r-practical { flex: 1; min-width: 0; font-size: .95rem; max-height: 100%; overflow: auto; }
-.r-practical h3 { font-size: 1.2rem; }
+/* Text here is sized off the width like everything else, but capped by the height: on wide, short screens (16:9
+   laptops and TVs) the width-based size made the details too tall to fit without scrolling. Tablets are unchanged. */
+.r-practical { flex: 1; min-width: 0; font-size: min(.95rem, 1.85vh); max-height: 100%; overflow: auto; }
+.r-practical h3 { font-size: 1.26em; }
 
 /* The answer as a card that turns over: the at-a-glance face first, then the details. The details face sets the
    card's size (scrolling inside if it's too tall) and the glance face covers it exactly. */
@@ -244,13 +246,13 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: .2rem;
+  gap: .18em;
   text-align: center;
-  font-size: 1.12rem;
+  font-size: min(1.12rem, 2.2vh); /* capped by the height, like the details face it covers */
   cursor: pointer;
 }
 
-.glance-face .glance-beats { width: 100%; margin: .8rem 0 1.1rem; }
+.glance-face .glance-beats { width: 100%; margin: .7em 0 1em; }
 
 .glance-hours {
   display: flex;
@@ -265,10 +267,10 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 .glance-hours .unit { font-weight: 800; font-size: 1.1em; }
 
 .g-more {
-  margin-top: 1.2rem;
+  margin-top: 1.07em;
   padding: .45em 1.1em;
   border-radius: 999px;
-  font-size: .85rem;
+  font-size: .76em; /* sizes on this card are relative to it, so they shrink with it on wide screens */
   font-weight: 800;
   color: var(--ink);
   background: var(--gold);
@@ -285,7 +287,7 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
   border-radius: 999px;
   padding: .4em 1em;
   font: inherit;
-  font-size: .85rem;
+  font-size: .9em;
   font-weight: 800;
   color: var(--ink-soft);
   background: transparent;
