@@ -231,6 +231,69 @@ body.kiosk { overflow: hidden; user-select: none; -webkit-user-select: none; }
 .r-practical { flex: 1; min-width: 0; font-size: .95rem; max-height: 100%; overflow: auto; }
 .r-practical h3 { font-size: 1.2rem; }
 
+/* The answer as a card that turns over: the at-a-glance face first, then the details. The details face sets the
+   card's size (scrolling inside if it's too tall) and the glance face covers it exactly. */
+.answer-flip { position: relative; perspective: 2400px; align-self: stretch; display: flex; align-items: center; overflow: visible; }
+.answer-flip.flipped .flip-inner { transform: rotateY(180deg); }
+.answer-flip .flip-inner { position: relative; display: flex; flex-direction: column; width: 100%; max-height: 100%; }
+.answer-flip .flip-back { flex: 0 1 auto; min-height: 0; overflow: auto; }
+.answer-flip .flip-front { position: absolute; inset: 0; }
+
+.glance-face {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: .2rem;
+  text-align: center;
+  font-size: 1.12rem;
+  cursor: pointer;
+}
+
+.glance-face .glance-beats { width: 100%; margin: .8rem 0 1.1rem; }
+
+.glance-hours {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: .45em;
+  animation: g-pop .5s cubic-bezier(.3, 1.5, .5, 1) 1.7s both;
+}
+
+.glance-hours .num { font-size: 2.8em; font-weight: 900; color: var(--berry); line-height: 1; }
+.glance-hours .unit { font-weight: 800; font-size: 1.1em; }
+
+.g-more {
+  margin-top: 1.2rem;
+  padding: .45em 1.1em;
+  border-radius: 999px;
+  font-size: .85rem;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--gold);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+}
+
+.answer-flip .flip-back h3 { clear: both; }
+
+/* Top right of the details, where it's in view without scrolling. */
+.g-back {
+  float: right;
+  margin: .2em 0 .3em .8em;
+  border: 1.5px solid #d5dce8;
+  border-radius: 999px;
+  padding: .4em 1em;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) { .glance-hours { animation: none; } }
+
 .r-foot {
   display: flex;
   align-items: center;

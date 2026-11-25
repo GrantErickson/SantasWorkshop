@@ -25,6 +25,7 @@
 .c-wish .hand { font-family: var(--font-hand); font-weight: 400; color: var(--gold); }
 
 .c-practical { margin-top: 16px; font-size: 1rem; }
+.c-practical .glance-beats { font-size: .92em; gap: .25em; }
 
 .c-picture { margin: 16px 0 0; }
 .c-picture figcaption { margin-top: 8px; text-align: center; color: var(--frost); font-size: .9rem; }

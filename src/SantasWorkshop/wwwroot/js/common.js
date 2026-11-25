@@ -110,20 +110,47 @@ export function snow(canvas, { count = 90 } = {}) {
   tick();
 }
 
-/** HTML for the "how AI could really do this" panel. */
-export function practicalHtml(wish, { showFirstStep = true } = {}) {
+/** True when the wish has the at-a-glance summary (wishes made before it existed don't). */
+export const hasGlance = (wish) => (wish.practical?.tldr?.length ?? 0) >= 3;
+
+/** The summary's three beats, icon over a few words, with arrows between: what comes in → what AI does → what you get. */
+function beatsHtml(p) {
+  return `<div class="glance-beats">${p.tldr.slice(0, 3).map((b, i) => `
+      ${i ? `<span class="g-arrow" aria-hidden="true"></span>` : ""}
+      <div class="g-beat" style="--i:${i}"><span class="g-icon" aria-hidden="true">${esc(b.icon)}</span><span class="g-text">${esc(b.text)}</span></div>`).join("")}
+    </div>`;
+}
+
+/** The kiosk's at-a-glance face of the "how AI could really do this" card: the three beats and the hours. */
+export function glanceHtml(wish) {
   const p = wish.practical;
   return `
     <div class="eyebrow">How AI could really do this</div>
-    <h3>${esc(p.headline)}</h3>
-    <ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
-    <div class="tags">${p.techniques.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
-    ${showFirstStep && p.firstStep ? `<div class="first-step"><b>Try this first:</b> ${esc(p.firstStep)}</div>` : ""}
-    <div class="hours">
+    ${beatsHtml(p)}
+    <div class="glance-hours"><span class="num">≈ ${fmt(p.hoursSavedPerYear)}</span><span class="unit">hours a year back</span></div>`;
+}
+
+/**
+ * HTML for the "how AI could really do this" panel.
+ * @param glanceFirst  open with the at-a-glance beats and the hours, then the details (the phone card)
+ */
+export function practicalHtml(wish, { showFirstStep = true, glanceFirst = false } = {}) {
+  const p = wish.practical;
+  const hours = (where) => `
+    <div class="hours ${where}">
       <span class="num">≈ ${fmt(p.hoursSavedPerYear)}</span>
       <span class="unit">hours a year back</span>
       <span class="why">${esc(p.hoursAssumption)}</span>
     </div>`;
+  const glance = glanceFirst && hasGlance(wish);
+  return `
+    <div class="eyebrow">How AI could really do this</div>
+    ${glance ? beatsHtml(p) + hours("top") + `<div class="eyebrow sub">How it works</div>` : ""}
+    <h3>${esc(p.headline)}</h3>
+    <ol>${p.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="tags">${p.techniques.map((t) => `<span class="tag">${esc(t)}</span>`).join("")}</div>
+    ${showFirstStep && p.firstStep ? `<div class="first-step"><b>Try this first:</b> ${esc(p.firstStep)}</div>` : ""}
+    ${glance ? "" : hours("bottom")}`;
 }
 
 /** Animate a number from its current value to a new one. */

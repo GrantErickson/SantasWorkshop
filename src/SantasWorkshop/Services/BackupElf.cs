@@ -21,7 +21,8 @@ public sealed partial class BackupElf
         string[] Techniques,
         string FirstStep,
         int Hours,
-        string Assumption);
+        string Assumption,
+        (string Icon, string Text)[] Tldr);
 
     private static readonly Template[] Templates =
     [
@@ -37,7 +38,8 @@ public sealed partial class BackupElf
              "Clean matches post automatically; mismatches land in a short queue for human review."],
             ["Document extraction", "Rule-based matching", "Exception routing"],
             "Pull last month's invoices and try AI extraction on 50 of them. Measure how many match your records without a human touch.",
-            520, "4 people × 3 hrs/week × 48 weeks, ~45% automated"),
+            520, "4 people × 3 hrs/week × 48 weeks, ~45% automated",
+            [("🧾", "Invoices come in"), ("🤖", "AI matches them"), ("✅", "You OK exceptions")]),
 
         new("Sales & Marketing",
             ["proposal", "rfp", "sales", "crm", "lead", "marketing", "social media", "newsletter", "campaign", "quote", "pitch", "blog", "linkedin", "follow up", "follow-up", "prospect"],
@@ -51,7 +53,8 @@ public sealed partial class BackupElf
              "A salesperson reviews, edits and sends; the final version feeds back into the library."],
             ["Search over company docs", "Drafting with approval", "CRM integration"],
             "Gather your ten best recent proposals into one folder and have AI draft the next one from them. Compare the time against your usual process.",
-            640, "5 reps × 3 hrs/week × 48 weeks, ~45% faster"),
+            640, "5 reps × 3 hrs/week × 48 weeks, ~45% faster",
+            [("📇", "Prospect details in"), ("✍️", "AI drafts the proposal"), ("🤝", "Reps edit and send")]),
 
         new("Customer Service",
             ["support", "ticket", "customer", "triag", "complaint", "help desk", "helpdesk", "phone call", "faq", "inquir", "service request", "returns", "chat"],
@@ -65,7 +68,8 @@ public sealed partial class BackupElf
              "Agents approve or edit drafts; urgent or upset customers go straight to a person."],
             ["Classification and routing", "Q&A over help docs", "Drafting with approval"],
             "Export 200 recent tickets and test whether AI tags and routes them the way your best agent would.",
-            780, "5 agents × 4 hrs/week × 48 weeks, ~40% automated"),
+            780, "5 agents × 4 hrs/week × 48 weeks, ~40% automated",
+            [("📨", "Requests pour in"), ("🤖", "AI sorts and drafts"), ("🙋", "Agents take tricky ones")]),
 
         new("HR & People",
             ["onboard", "hiring", "resume", "recruit", "interview", "benefit", "pto", "timesheet", "performance review", "training", "job description", "candidate", "employee handbook"],
@@ -79,7 +83,8 @@ public sealed partial class BackupElf
              "Recruiters get structured candidate summaries, while humans make every hiring decision."],
             ["Q&A over policies", "Document generation", "Summarization"],
             "Load your employee handbook into a pilot assistant and let three managers try it for policy questions for a month.",
-            420, "3 HR staff × 3 hrs/week × 48 weeks, ~50% automated"),
+            420, "3 HR staff × 3 hrs/week × 48 weeks, ~50% automated",
+            [("❓", "Routine HR questions"), ("📖", "AI answers from handbook"), ("💛", "HR focuses on people")]),
 
         new("Operations",
             ["inventory", "shipping", "order", "logistic", "vendor", "supply", "work order", "dispatch", "production", "warehouse", "routing", "maintenance", "procurement", "fleet"],
@@ -93,7 +98,8 @@ public sealed partial class BackupElf
              "Routine updates go out automatically; planners approve anything unusual."],
             ["Forecasting", "Workflow automation", "Anomaly alerts"],
             "Pick one recurring weekly ops report and automate it end to end, with a person checking the output for the first month.",
-            690, "5 people × 3 hrs/week × 48 weeks, ~50% automated"),
+            690, "5 people × 3 hrs/week × 48 weeks, ~50% automated",
+            [("📦", "Orders and inventory"), ("🔮", "AI forecasts and flags"), ("🧑‍🔧", "Team handles exceptions")]),
 
         new("IT & Software",
             ["password", "reset", "code", "bug", "deploy", "testing", "documentation", "patch", "server", "it ticket", "access request", "software", "laptop", "setup"],
@@ -107,7 +113,8 @@ public sealed partial class BackupElf
              "Recurring incidents are summarized with likely causes so fixes come faster."],
             ["AI coding assistants", "Self-service automation", "Incident summarization"],
             "List your top five repetitive IT tickets and automate the safest one with an approval step.",
-            850, "6 people × 3 hrs/week × 48 weeks, ~50% automated"),
+            850, "6 people × 3 hrs/week × 48 weeks, ~50% automated",
+            [("🎫", "IT requests and code"), ("🤖", "AI drafts the fixes"), ("👩‍💻", "Engineers approve")]),
 
         new("Email & Admin",
             ["email", "inbox", "meeting", "notes", "calendar", "schedul", "minutes", "data entry", "filing", "paperwork", "form", "agenda", "voicemail", "copy and paste", "copy-paste"],
@@ -121,7 +128,8 @@ public sealed partial class BackupElf
              "Form and document data is extracted into your systems instead of being retyped."],
             ["Summarization", "Drafting with approval", "Data extraction"],
             "Turn on AI meeting summaries for one team's recurring meetings for 30 days and track the time saved on notes and follow-ups.",
-            600, "5 people × 2.5 hrs/week × 48 weeks, ~50% automated"),
+            600, "5 people × 2.5 hrs/week × 48 weeks, ~50% automated",
+            [("📬", "Threads and meetings"), ("📝", "AI summarizes and drafts"), ("☕", "Afternoons back")]),
 
         new("Reports & Data",
             ["report", "dashboard", "spreadsheet", "excel", "data", "metric", "kpi", "analysis", "status update", "pivot", "numbers", "forecast"],
@@ -135,7 +143,8 @@ public sealed partial class BackupElf
              "An owner reviews the summary and anyone can ask follow-up questions in plain English."],
             ["Data integration", "Narrative generation", "Natural-language Q&A"],
             "Pick the report that takes longest to assemble each month and automate the data pull plus a draft summary.",
-            480, "4 people × 2.5 hrs/week × 48 weeks, ~50% automated"),
+            480, "4 people × 2.5 hrs/week × 48 weeks, ~50% automated",
+            [("🗄️", "Data from your systems"), ("📊", "AI builds the report"), ("💬", "People discuss results")]),
 
         new("Legal & Compliance",
             ["contract", "clause", "legal", "compliance", "policy", "nda", "regulat", "audit", "safety", "osha", "hipaa", "terms", "redline"],
@@ -149,7 +158,8 @@ public sealed partial class BackupElf
              "A reviewer approves the redlines; summaries are stored for later search."],
             ["Clause extraction", "Comparison to playbook", "Summarization"],
             "Write down your five must-check clauses and test AI review on ten recent NDAs or vendor contracts.",
-            360, "2 people × 4 hrs/week × 48 weeks, ~45% automated"),
+            360, "2 people × 4 hrs/week × 48 weeks, ~45% automated",
+            [("📄", "Contracts come in"), ("🔍", "AI flags risky clauses"), ("⚖️", "Lawyers make the calls")]),
 
         new("Holiday Magic",
             ["present", "gift", "wrap", "christmas", "cookie", "shopping", "shovel", "snow", "dishes", "laundry", "holiday card", "decorat", "tree", "lights"],
@@ -163,7 +173,8 @@ public sealed partial class BackupElf
              "You review the plan each morning and send what is ready."],
             ["Task extraction", "Prioritization", "Drafting with approval"],
             "Try an AI assistant on your own inbox for a week: have it pull out every to-do and draft the easy replies.",
-            150, "1 person × 1 hr/week × 48 weeks, ~60% automated"),
+            150, "1 person × 1 hr/week × 48 weeks, ~60% automated",
+            [("📝", "Pile of to-dos"), ("🤖", "AI sorts and drafts"), ("🎁", "You send what's ready")]),
     ];
 
     private static readonly Template Generic = new(
@@ -178,7 +189,8 @@ public sealed partial class BackupElf
          "People review drafts and handle exceptions, and their feedback improves the system."],
         ["Workflow automation", "Drafting with approval", "Exception handling"],
         "Time this task for one week, then pilot AI on its most repetitive step and compare.",
-        400, "5 people × 2 hrs/week × 48 weeks, ~40% automated");
+        400, "5 people × 2 hrs/week × 48 weeks, ~40% automated",
+        [("📥", "Repetitive work in"), ("🤖", "AI does the routine"), ("🙌", "People make the calls")]);
 
     public ElfAnswer GrantWish(string text)
     {
@@ -216,6 +228,7 @@ public sealed partial class BackupElf
                 FirstStep = template.FirstStep,
                 HoursSavedPerYear = hours,
                 HoursAssumption = template.Assumption,
+                Tldr = template.Tldr.Select(b => new TldrBeat { Icon = b.Icon, Text = b.Text }).ToList(),
             },
         };
     }

@@ -6,6 +6,7 @@ they wish would disappear. Within seconds they get:
 - **A toy blueprint**: a silly, illustrated elf machine that does the job, drawn as an engineering blueprint.
   A few seconds later the card turns over to an AI-painted picture of the same machine.
 - **A real answer**: how AI could actually handle that task, a pilot to try first, and an estimate of hours saved per year.
+  It opens with an at-a-glance version (three icon steps and the hours), then after a few seconds turns over to the details.
 - **A take-home QR code**: opens their card on their phone, where they can opt in to a personalized 90-day AI starter plan
   by email (that's the lead capture).
 
@@ -179,8 +180,9 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
 
 - **One call per wish** (`Services/ElfService.cs`, prompts in `Services/ElfPrompts.cs`) with a strict JSON schema
   (structured outputs). Claude returns the blueprint (a name, a tagline, 4–5 machine parts from a fixed catalog, and a
-  warning label), the practical answer, an hours estimate with its assumptions, a category, an anonymized line for the
-  wall, and an `appropriate` flag. Unsuitable wishes get a friendly "Ho ho… no!" on the kiosk and never reach the wall.
+  warning label), the practical answer with a three-step at-a-glance summary, an hours estimate with its assumptions, a
+  category, an anonymized line for the wall, and an `appropriate` flag. Unsuitable wishes get a friendly "Ho ho… no!"
+  on the kiosk and never reach the wall.
 - **The blueprint drawing is code, not image generation.** `wwwroot/js/blueprint.js` draws each part Claude picks
   (63 of them), on one of several machine shapes with its own motion and pipe fittings, seeded from the wish so it
   always draws the same way. That keeps every card on-brand and instant. The prompt lists the parts in a fresh random

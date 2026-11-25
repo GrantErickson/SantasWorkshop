@@ -23,7 +23,7 @@ async function init() {
   $("#cEyebrow").textContent = `Wish #${wish.number}`;
   $("#cWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(wish.text)}`;
   $("#cBlueprint").innerHTML = renderBlueprint(wish, { company: config.companyName, mark: config.glyphUrl });
-  $("#cPractical").innerHTML = practicalHtml(wish);
+  $("#cPractical").innerHTML = practicalHtml(wish, { glanceFirst: true });
   $("#loading").classList.add("hidden");
   $("#card").classList.remove("hidden");
 

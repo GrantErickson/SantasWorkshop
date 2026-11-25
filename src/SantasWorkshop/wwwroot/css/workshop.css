@@ -213,6 +213,67 @@ button.chip:hover { background: rgba(255, 255, 255, .16); color: var(--snow); }
 .practical .hours .unit { font-weight: 800; }
 .practical .hours .why { flex-basis: 100%; color: var(--ink-soft); font-size: .85em; }
 
+/* Hours shown up top, under the at-a-glance beats (the phone card), with the details following. */
+.practical .hours.top { border-top: 0; padding-top: 0; border-bottom: 2px dashed #e2e6ee; padding-bottom: .8em; margin-bottom: .2em; }
+.practical .eyebrow.sub { margin-top: 1em; color: var(--ink-soft); }
+
+/* The at-a-glance answer: three icon beats, what comes in → what AI does → what you get. */
+.glance-beats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: .35em;
+  margin: .6em 0 1em;
+}
+
+.g-beat { display: flex; flex-direction: column; align-items: center; gap: .5em; text-align: center; min-width: 0; }
+
+.g-icon {
+  width: 2.3em;
+  height: 2.3em;
+  font-size: 1.7em;
+  line-height: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e9f5ee;
+  box-shadow: inset 0 0 0 2px rgba(31, 107, 69, .16);
+}
+
+.g-text { font-weight: 800; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
+
+/* A short line with a chevron head, level with the middle of the icons. */
+.g-arrow {
+  position: relative;
+  width: 1.3em;
+  height: 2px;
+  margin-top: calc(1.7em * 2.3 / 2 - 1px);
+  background: var(--pine);
+  opacity: .6;
+}
+
+.g-arrow::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: .42em;
+  height: .42em;
+  border-top: 2px solid var(--pine);
+  border-right: 2px solid var(--pine);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* The beats pop in one after another, so the eye follows them in order. */
+.g-beat { animation: g-pop .5s cubic-bezier(.3, 1.5, .5, 1) both; animation-delay: calc(.3s + var(--i, 0) * .45s); }
+.g-arrow { animation: g-draw .35s ease-out both; animation-delay: calc(.1s + var(--i, 0) * .45s); }
+@keyframes g-pop { from { opacity: 0; transform: translateY(10px) scale(.6); } }
+@keyframes g-draw { from { opacity: 0; transform: scaleX(0); transform-origin: left; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .g-beat, .g-arrow { animation: none; }
+}
+
 /* Blueprint card wrapper (the SVG itself comes from blueprint.js) */
 .blueprint-card {
   border-radius: var(--radius);

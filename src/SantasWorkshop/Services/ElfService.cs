@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using Anthropic;
 using Anthropic.Exceptions;
@@ -168,7 +170,33 @@ public sealed class ElfService
         p.FirstStep = Clip(p.FirstStep, 240);
         p.HoursAssumption = Clip(p.HoursAssumption, 120);
         p.HoursSavedPerYear = Math.Clamp(p.HoursSavedPerYear, 10, 5000);
+        p.Tldr = NormalizeTldr(p.Tldr);
         return a;
+    }
+
+    private static readonly string[] DefaultTldrIcons = ["📥", "🤖", "✅"];
+
+    /// <summary>Exactly three beats, each one emoji and a few words, or none at all (the screens then skip the summary).</summary>
+    private static List<TldrBeat> NormalizeTldr(List<TldrBeat>? beats)
+    {
+        var clean = (beats ?? []).Where(b => !string.IsNullOrWhiteSpace(b?.Text)).Take(3).ToList();
+        if (clean.Count < 3) return [];
+        return clean
+            .Select((b, i) => new TldrBeat
+            {
+                Icon = FirstEmoji(b.Icon) ?? DefaultTldrIcons[i],
+                Text = Clip(b.Text.Trim().TrimEnd('.', '!', '…'), 30),
+            })
+            .ToList();
+    }
+
+    /// <summary>The first emoji in the string (including any skin tone or joined parts), or null if it doesn't start with one.</summary>
+    private static string? FirstEmoji(string? s)
+    {
+        s = s?.Trim();
+        if (string.IsNullOrEmpty(s)) return null;
+        var first = StringInfo.GetNextTextElement(s);
+        return first.Length <= 16 && Rune.GetUnicodeCategory(Rune.GetRuneAt(first, 0)) == UnicodeCategory.OtherSymbol ? first : null;
     }
 
     private static string Clip(string? s, int max)

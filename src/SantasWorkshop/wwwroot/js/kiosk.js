@@ -1,4 +1,4 @@
-import { $, $$, api, applyBranding, esc, practicalHtml, snow } from "./common.js";
+import { $, $$, api, applyBranding, esc, glanceHtml, hasGlance, practicalHtml, snow } from "./common.js";
 import { renderBlueprint } from "./blueprint.js";
 import { thinkingMachine } from "./thinking-machine.js";
 import { hushMusic, setUpSound, sfx, showNowPlaying, startMachine, startMusic } from "./sound.js";
@@ -6,6 +6,8 @@ import { makeFlip, waitForPicture } from "./picture.js";
 
 const RESULT_IDLE_SECONDS = 120; // reset to the start screen after this long without a touch
 const ASK_IDLE_SECONDS = 75;     // clear a half-typed wish someone walked away from
+const GLANCE_SECONDS = 8;        // how long the at-a-glance answer shows before its card turns over to the details
+const TURN_GAP_MS = 1800;        // the result screen's two cards never turn over on their own within this long of each other
 
 const IDEAS = [
   "do our expense reports", "triage the support inbox", "write proposals", "take meeting notes",
@@ -86,6 +88,9 @@ let idleSeconds = 0;
 let recognition = null;
 let resultFlip;
 let pictureWatch = null; // stops checking for the last guest's picture when the next guest starts
+let answerTimer = 0;
+let answerGeneration = 0; // bumps for each wish, so a late timer from the last guest's answer does nothing
+let lastTurn = 0;
 
 init();
 
@@ -128,6 +133,7 @@ function show(id) {
 function showAsk() {
   stopListening();
   pictureWatch?.abort();
+  clearTimeout(answerTimer);
   show("ask");
   $("#wishText").value = "";
   $("#sendBtn").disabled = false;
@@ -234,7 +240,7 @@ function showResult(wish) {
   $("#rWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(wish.text)}`;
   resultFlip.reset(wish);
   resultFlip.front.innerHTML = renderBlueprint(wish, { company: config.companyName, mark: config.glyphUrl });
-  $("#rPractical").innerHTML = practicalHtml(wish);
+  showAnswer(wish);
   $("#rQr").src = `/qr/${encodeURIComponent(wish.id)}.svg`;
   show("result");
   sfx("fanfare");
@@ -250,8 +256,59 @@ async function showPictureWhenPainted(id) {
   const watch = (pictureWatch = new AbortController());
   const url = await waitForPicture(id, { signal: watch.signal });
   if (watch.signal.aborted) return;
+  if (url) await takeTurn();
+  if (watch.signal.aborted) return;
   if (url && await resultFlip.show(url, { sound: true })) bumpIdle();
   else resultFlip.none();
+}
+
+/**
+ * The "how AI could really do this" card: the at-a-glance version (three icon beats and the hours) first, then after
+ * a few seconds, or a tap, it turns over to the details. Wishes from before the summary existed show the details.
+ */
+function showAnswer(wish) {
+  const host = $("#rPractical");
+  clearTimeout(answerTimer);
+  const mine = ++answerGeneration;
+  if (!hasGlance(wish)) {
+    host.className = "practical r-practical";
+    host.innerHTML = practicalHtml(wish);
+    return;
+  }
+  host.className = "r-practical answer-flip"; // not .flip: the kiosk sizes that class for the blueprint card
+  host.innerHTML = `
+    <div class="flip-inner">
+      <div class="practical flip-back">
+        <button type="button" class="g-back">↺ Quick version</button>
+        ${practicalHtml(wish)}
+      </div>
+      <div class="practical flip-front glance-face">
+        ${glanceHtml(wish)}
+        <span class="g-more">👆 Tap to see how it works</span>
+      </div>
+    </div>`;
+  const front = host.querySelector(".flip-front");
+  const back = host.querySelector(".flip-back");
+  const turn = (toDetails) => {
+    clearTimeout(answerTimer);
+    host.classList.toggle("flipped", toDetails);
+    front.inert = toDetails;
+    back.inert = !toDetails;
+    if (!toDetails) back.scrollTop = 0;
+  };
+  turn(false);
+  front.addEventListener("click", () => { sfx("tap"); turn(true); });
+  back.querySelector(".g-back").addEventListener("click", () => { sfx("tap"); turn(false); });
+  answerTimer = setTimeout(async () => {
+    await takeTurn();
+    if (mine === answerGeneration && !host.classList.contains("flipped")) turn(true);
+  }, GLANCE_SECONDS * 1000);
+}
+
+/** Waits until neither card on the result screen has just turned over by itself, so the two never flip at once. */
+async function takeTurn() {
+  for (let wait; (wait = lastTurn + TURN_GAP_MS - performance.now()) > 0;) await new Promise((r) => setTimeout(r, wait));
+  lastTurn = performance.now();
 }
 
 // ---- Idle handling -------------------------------------------------------

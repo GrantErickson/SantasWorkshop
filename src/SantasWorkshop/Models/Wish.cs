@@ -77,6 +77,18 @@ public sealed class PracticalPlan
     public string FirstStep { get; set; } = "";
     public int HoursSavedPerYear { get; set; }
     public string HoursAssumption { get; set; } = "";
+
+    /// <summary>
+    /// The at-a-glance version: three beats (what comes in, what the AI does, what people get), each an emoji and a
+    /// few words. Empty for wishes made before it existed; the screens then show only the details.
+    /// </summary>
+    public List<TldrBeat> Tldr { get; set; } = [];
+}
+
+public sealed class TldrBeat
+{
+    public string Icon { get; set; } = "";
+    public string Text { get; set; } = "";
 }
 
 /// <summary>Shape of the elf's structured JSON answer.</summary>
