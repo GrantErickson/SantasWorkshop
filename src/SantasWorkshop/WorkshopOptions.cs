@@ -8,7 +8,10 @@ public sealed class WorkshopOptions
     // Branding and copy shown on the screens.
     public string CompanyName { get; set; } = "IntelliTect";
     public string CompanyUrl { get; set; } = "https://intellitect.com";
+    /// <summary>Logo shown in place of the company name on the screens, e.g. /img/brand/intellitect-wordmark-reversed.svg.</summary>
     public string? LogoUrl { get; set; }
+    /// <summary>Small light-coloured mark stamped in each blueprint's title block, e.g. /img/brand/intellitect-glyph-white.svg.</summary>
+    public string? GlyphUrl { get; set; }
     public string EventName { get; set; } = "Innovate Inland Northwest Christmas Party";
     public string RegionName { get; set; } = "the Inland Northwest";
     public int BuiltInDays { get; set; } = 2;

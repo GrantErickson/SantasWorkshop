@@ -150,7 +150,7 @@ function showFeature({ justPainted = false } = {}) {
   if (pool.length === 0) {
     $("#featureLabel").textContent = "Coming soon to a workshop near you";
     featureFlip.reset();
-    featureFlip.front.innerHTML = renderBlueprint(SAMPLE, { company: config.companyName });
+    featureFlip.front.innerHTML = renderBlueprint(SAMPLE, { company: config.companyName, mark: config.glyphUrl });
     $("#featureMeta").innerHTML = "";
     return;
   }
@@ -161,7 +161,7 @@ function showFeature({ justPainted = false } = {}) {
   void host.offsetWidth; // restart the CSS animation
   host.classList.add("swap-in");
   featureFlip.reset(item);
-  featureFlip.front.innerHTML = renderBlueprint(item, { company: config.companyName });
+  featureFlip.front.innerHTML = renderBlueprint(item, { company: config.companyName, mark: config.glyphUrl });
   $("#featureMeta").innerHTML = `
     <span class="hand">…${esc(item.wallText)}</span>
     <span class="wall-feature-hours">≈ <b>${fmt(item.hours)}</b> hrs/yr back</span>`;
@@ -195,7 +195,7 @@ function celebrate(item) {
   stopFeatureRotation();
   $("#celebrateWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(item.wallText)}`;
   celebrateFlip.reset(item);
-  celebrateFlip.front.innerHTML = renderBlueprint(item, { company: config.companyName });
+  celebrateFlip.front.innerHTML = renderBlueprint(item, { company: config.companyName, mark: config.glyphUrl });
   $("#celebrateMeta").innerHTML = `<span class="chip">${esc(item.category)}</span> ≈ <b>${fmt(item.hours)}</b> hours a year back`;
   const overlay = $("#celebrate");
   overlay.classList.remove("hidden", "leaving");

@@ -154,7 +154,8 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
 | Setting | Default | Notes |
 |---|---|---|
 | `CompanyName`, `CompanyUrl` | IntelliTect | Shown on screens, blueprints and emails. |
-| `LogoUrl` | *(empty)* | Optional logo image (e.g. drop a file in `wwwroot/img/` and use `/img/logo.svg`). Text wordmark otherwise. |
+| `LogoUrl` | `/img/brand/intellitect-wordmark-reversed.svg` | Logo shown on the screens in place of the company name (empty = plain text). The screens are dark, so use a light version. |
+| `GlyphUrl` | `/img/brand/intellitect-glyph-white.svg` | Small mark stamped in each blueprint's title block (empty = none). |
 | `EventName`, `RegionName` | Innovate Inland Northwest… | Used in the copy and the prompts. |
 | `BuiltInDays` | 2 | "We built this booth with AI in N days." |
 | `StartingHours` | 0 | Added to the hours counter. |

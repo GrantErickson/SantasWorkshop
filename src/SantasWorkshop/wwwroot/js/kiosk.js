@@ -234,7 +234,7 @@ function showResult(wish) {
   $("#rEyebrow").textContent = `Wish #${wish.number} granted!`;
   $("#rWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(wish.text)}`;
   resultFlip.reset(wish);
-  resultFlip.front.innerHTML = renderBlueprint(wish, { company: config.companyName });
+  resultFlip.front.innerHTML = renderBlueprint(wish, { company: config.companyName, mark: config.glyphUrl });
   $("#rPractical").innerHTML = practicalHtml(wish);
   $("#rQr").src = `/qr/${encodeURIComponent(wish.id)}.svg`;
   show("result");

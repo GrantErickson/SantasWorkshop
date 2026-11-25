@@ -919,9 +919,9 @@ function wrapText(text, max) {
 
 /**
  * @param wish   object with id, number and blueprint { machineName, tagline, modules[], fineprint }
- * @param opts   { company, animate }
+ * @param opts   { company, mark (URL of a small light-coloured logo for the title block), animate }
  */
-export function renderBlueprint(wish, { company = "IntelliTect", animate = true } = {}) {
+export function renderBlueprint(wish, { company = "IntelliTect", mark = "", animate = true } = {}) {
   const id = `bp${++uid}`;
   motion = animate && !prefersReducedMotion();
   const bp = wish.blueprint;
@@ -1094,6 +1094,7 @@ export function renderBlueprint(wish, { company = "IntelliTect", animate = true 
         <text x="632" y="539">${drawingNo}</text><text x="778" y="539">1 : NORTH POLE</text>
         <text x="632" y="571">SANTA'S AI ELF</text><text x="778" y="571">${esc(company.toUpperCase())}</text>
       </g>
+      ${mark ? `<image href="${esc(mark)}" x="912" y="548.5" width="14" height="23" opacity=".9"/>` : ""}
     </g>
   </g>
 </svg>`;

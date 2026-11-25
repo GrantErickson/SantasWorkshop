@@ -71,7 +71,7 @@ public static class Endpoints
             var opts = o.Value;
             return new
             {
-                opts.CompanyName, opts.CompanyUrl, opts.LogoUrl, opts.EventName, opts.RegionName, opts.BuiltInDays,
+                opts.CompanyName, opts.CompanyUrl, opts.LogoUrl, opts.GlyphUrl, opts.EventName, opts.RegionName, opts.BuiltInDays,
                 PublicBaseUrl = BaseUrl(http, opts),
                 KioskKeyRequired = !string.IsNullOrEmpty(opts.KioskKey),
                 ClaudeEnabled = elf.ClaudeEnabled,

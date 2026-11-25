@@ -22,7 +22,7 @@ async function init() {
   document.title = `${wish.blueprint.machineName} · Santa's AI Workshop`;
   $("#cEyebrow").textContent = `Wish #${wish.number}`;
   $("#cWish").innerHTML = `<span class="hand">I wish AI would</span> ${esc(wish.text)}`;
-  $("#cBlueprint").innerHTML = renderBlueprint(wish, { company: config.companyName });
+  $("#cBlueprint").innerHTML = renderBlueprint(wish, { company: config.companyName, mark: config.glyphUrl });
   $("#cPractical").innerHTML = practicalHtml(wish);
   $("#loading").classList.add("hidden");
   $("#card").classList.remove("hidden");
