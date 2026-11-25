@@ -90,7 +90,7 @@ public static class Endpoints
             if (text.Length < 3) return Results.BadRequest(new { error = "Tell the elf a little more about your wish!" });
             if (text.Length > 400) text = text[..400];
 
-            var (answer, source, seconds) = await elf.GrantWishAsync(text, ct);
+            var (answer, source, seconds, elfNote) = await elf.GrantWishAsync(text, ct);
             var wish = store.AddWish(new Wish
             {
                 CreatedAt = DateTimeOffset.Now,
@@ -100,6 +100,7 @@ public static class Endpoints
                 Appropriate = answer.Appropriate,
                 Source = source,
                 ElapsedSeconds = Math.Round(seconds, 1),
+                ElfNote = elfNote,
                 Blueprint = answer.Blueprint,
                 Practical = answer.Practical,
             });

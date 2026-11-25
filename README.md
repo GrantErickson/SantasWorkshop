@@ -202,6 +202,10 @@ same Wi-Fi (many venues isolate clients), and the microphone button only appears
 - **The machine pictures come from a Microsoft MAI image model, not Claude** (see below).
 - **Server-side refusal fallback** (`server-side-fallback-2026-07-01` beta) is on: if a safety classifier declines
   a request, the API retries it on a fallback model inside the same call. Anything else that fails drops to the backup elf.
+- **The answer is written practical half first, machine parts last.** With the parts in the middle, Opus 5.5 sometimes
+  treated the last part (often the sleigh that "delivers the finished work") as the end of its answer and filled
+  every field after it with placeholders such as "x". An answer that still comes back like that is asked for once more,
+  then handed to the backup elf. The admin page notes any wish where that happened, or where another model answered.
 
 ## Machine pictures
 

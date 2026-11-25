@@ -56,23 +56,62 @@ public sealed class ElfService
 
     public bool ClaudeEnabled => _client is not null;
 
-    public async Task<(ElfAnswer Answer, string Source, double Seconds)> GrantWishAsync(string text, CancellationToken ct)
+    /// <summary>
+    /// The answer, where it came from, how long it took, and a note for staff when anything was unusual: another model
+    /// answered, an answer came back hollow and was asked for again, or the backup elf stepped in. The note is empty
+    /// when Claude answered normally.
+    /// </summary>
+    public async Task<(ElfAnswer Answer, string Source, double Seconds, string Note)> GrantWishAsync(string text, CancellationToken ct)
     {
         var timer = Stopwatch.StartNew();
+        var notes = new List<string>();
         if (_client is not null)
         {
             try
             {
-                var answer = await AskAsync<ElfAnswer>(
-                    ElfPrompts.WishSystem(_options), ElfPrompts.WishUser(text), _wishSchema, ct);
-                return (Normalize(answer, text), "claude", timer.Elapsed.TotalSeconds);
+                // An answer can come back as valid JSON with placeholder text ("x") and no steps. Ask once more
+                // before handing the wish to the backup elf, so a guest never sees one.
+                for (var attempt = 1; attempt <= 2; attempt++)
+                {
+                    var reply = await AskAsync<ElfAnswer>(
+                        ElfPrompts.WishSystem(_options), ElfPrompts.WishUser(text), _wishSchema, ct);
+                    var served = reply.FellBack ? $"{reply.Model} (fallback)" : reply.Model;
+                    var missing = Missing(reply.Value);
+                    if (missing is null)
+                    {
+                        if (reply.FellBack) notes.Add($"answered by {served}");
+                        if ((reply.Value.Practical.Tldr?.Count ?? 0) < 3) notes.Add("no at-a-glance steps");
+                        return (Normalize(reply.Value, text), "claude", timer.Elapsed.TotalSeconds, string.Join("; ", notes));
+                    }
+                    _logger.LogWarning("Claude's answer {Attempt} came back hollow ({Missing}) from {Model}: {Json}",
+                        attempt, missing, served, Clip(reply.Json, 3000));
+                    notes.Add($"answer {attempt} from {served} came back hollow ({missing})");
+                }
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _logger.LogError(ex, "Claude could not grant the wish; using the backup elf.");
+                notes.Add($"Claude failed ({Clip(ex.Message, 120)})");
             }
         }
-        return (_backup.GrantWish(text), "backup", timer.Elapsed.TotalSeconds);
+        return (_backup.GrantWish(text), "backup", timer.Elapsed.TotalSeconds, string.Join("; ", notes));
+    }
+
+    /// <summary>
+    /// Which parts of an answer came back as placeholders, or null when it's whole. A wish judged unfit for the wall
+    /// is never shown, so it always passes.
+    /// </summary>
+    private static string? Missing(ElfAnswer a)
+    {
+        if (!a.Appropriate) return null;
+        var p = a.Practical;
+        var missing = new List<string>();
+        if ((a.Blueprint?.MachineName?.Trim().Length ?? 0) < 4) missing.Add("machine name");
+        if ((a.Blueprint?.Fineprint?.Trim().Length ?? 0) < 8) missing.Add("fineprint");
+        if ((p?.Headline?.Trim().Length ?? 0) < 20) missing.Add("headline");
+        if ((p?.Steps?.Count(s => (s?.Trim().Length ?? 0) >= 10) ?? 0) < 2) missing.Add("steps");
+        if ((p?.FirstStep?.Trim().Length ?? 0) < 15) missing.Add("first step");
+        return missing.Count == 0 ? null : string.Join(", ", missing);
     }
 
     public async Task<StarterPlan> WriteStarterPlanAsync(Wish wish, Lead lead, CancellationToken ct)
@@ -81,8 +120,8 @@ public sealed class ElfService
         {
             try
             {
-                var plan = await AskAsync<StarterPlan>(
-                    ElfPrompts.PlanSystem(_options), ElfPrompts.PlanUser(wish, lead), _planSchema, ct);
+                var plan = (await AskAsync<StarterPlan>(
+                    ElfPrompts.PlanSystem(_options), ElfPrompts.PlanUser(wish, lead), _planSchema, ct)).Value;
                 plan.Source = "claude";
                 return plan;
             }
@@ -94,7 +133,13 @@ public sealed class ElfService
         return _backup.WriteStarterPlan(wish);
     }
 
-    private async Task<T> AskAsync<T>(string system, string user, Dictionary<string, JsonElement> schema, CancellationToken ct)
+    /// <summary>
+    /// What Claude sent back: the parsed answer, the raw JSON (for the log when an answer looks wrong), the model that
+    /// actually wrote it, and whether the request fell back to another model after a safety classifier declined.
+    /// </summary>
+    private sealed record Reply<T>(T Value, string Json, string Model, bool FellBack);
+
+    private async Task<Reply<T>> AskAsync<T>(string system, string user, Dictionary<string, JsonElement> schema, CancellationToken ct)
     {
         var useFast = _options.UseFastMode;
         while (true)
@@ -125,8 +170,14 @@ public sealed class ElfService
                     throw new InvalidOperationException("Claude ran out of tokens before finishing the JSON.");
 
                 var json = string.Concat(response.Content.Select(b => b.TryPickText(out var t) ? t.Text : ""));
-                return JsonSerializer.Deserialize<T>(json, JsonOptions)
-                       ?? throw new InvalidOperationException("Claude returned empty JSON.");
+                var value = JsonSerializer.Deserialize<T>(json, JsonOptions)
+                            ?? throw new InvalidOperationException("Claude returned empty JSON.");
+                // A fallback leaves a marker block where it switched models; a request routed straight to the
+                // fallback model (it remembers recent fallbacks for a while) has no marker, only a different model.
+                var model = response.Model.Raw();
+                var fellBack = response.Content.Any(b => b.TryPickFallback(out _))
+                               || !string.Equals(model, _options.Model, StringComparison.OrdinalIgnoreCase);
+                return new Reply<T>(value, json, model, fellBack);
             }
             catch (AnthropicRateLimitException) when (useFast)
             {

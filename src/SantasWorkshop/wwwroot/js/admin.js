@@ -121,7 +121,7 @@ function renderWishes(wishes) {
         <td class="wrap">…${esc(w.wallText)}<br><span class="a-muted">${esc(w.blueprint.machineName)}</span></td>
         <td>${esc(w.category)}</td>
         <td class="num">${fmt(w.practical.hoursSavedPerYear)}</td>
-        <td>${w.source === "claude" ? `Claude <span class="a-muted">${w.elapsedSeconds}s</span>` : `<span class="pill wait">backup</span>`}</td>
+        <td class="wrap">${w.source === "claude" ? `Claude <span class="a-muted">${w.elapsedSeconds}s</span>` : `<span class="pill wait">backup</span>`}${w.elfNote ? `<br><span class="a-muted">${esc(w.elfNote)}</span>` : ""}</td>
         <td>${pictureCell(w)}</td>
         <td>${!w.appropriate ? `<span class="pill bad">flagged</span>` : w.hidden ? `<span class="pill">hidden</span>` : `<span class="pill good">on wall</span>`}</td>
         <td class="actions">

@@ -26,6 +26,12 @@ public sealed class Wish
 
     public double ElapsedSeconds { get; set; }
 
+    /// <summary>
+    /// For staff only (the admin page): anything unusual about how the elf answered, such as another model stepping in,
+    /// an answer that came back hollow and was asked for again, or why the backup elf took over. Empty when nothing was.
+    /// </summary>
+    public string ElfNote { get; set; } = "";
+
     public Blueprint Blueprint { get; set; } = new();
     public PracticalPlan Practical { get; set; } = new();
 
